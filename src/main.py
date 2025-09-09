@@ -30,6 +30,9 @@ def get_project_root():
 PROJECT_ROOT = get_project_root()
 LOG_DIR = PROJECT_ROOT / "log"
 
+# Create log directory if it doesn't exist
+LOG_DIR.mkdir(exist_ok=True)  # This creates the directory!
+
 # Create log file with date
 date_str = datetime.datetime.now().strftime("%Y-%m-%d")
 LOG_FILE = LOG_DIR / f"jenkins_ftd_automation_{date_str}.log"

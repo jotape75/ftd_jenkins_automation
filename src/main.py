@@ -32,7 +32,7 @@ LOG_DIR = PROJECT_ROOT / "log"
 
 # Create log file with date
 date_str = datetime.datetime.now().strftime("%Y-%m-%d")
-LOG_FILE = LOG_DIR / f"jenkins_pa_automation_{date_str}.log"
+LOG_FILE = LOG_DIR / f"jenkins_ftd_automation_{date_str}.log"
 
 # Configure logging
 logging.basicConfig(

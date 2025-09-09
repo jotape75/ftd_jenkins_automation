@@ -36,7 +36,7 @@ pipeline {
         stage('Pull Repository & Setup') {
             steps {
                 cleanWs()
-                git branch: 'main', url: 'https://github.com/jotape75/jenkins-pa-automation.git'
+                git branch: 'main', url: 'https://github.com/jotape75/ftd_jenkins_automation.git'
                 sh '''
                     echo "Setting up environment..."
                     python3 --version

@@ -65,12 +65,6 @@ class Step01_APIKeys:
             logger.info(f"FMC: {self.fmc_ip}")
             logger.info(f"Username: {self.username}")
 
-            return [{
-                'host': self.fmc_ip,
-                'username': self.username,
-                'password': self.password
-            }]
-
         except Exception as e:
             logger.error(f"Error getting credentials from Jenkins: {e}")
             raise
@@ -84,8 +78,11 @@ class Step01_APIKeys:
             bool: True if successful, False otherwise
         """
         try:
+
+            self._get_credentials_from_jenkins()
+
             # Get credentials from Jenkins form parameters
-            fmc_token = f"https:{self.fmc_ip}/api/fmc_platform/v1/auth/generatetoken"
+            fmc_token = f"https://{self.fmc_ip}/api/fmc_platform/v1/auth/generatetoken"
 
             # Generate Token
             response_token = requests.post(fmc_token, headers=self.rest_api_headers, auth=(self.username, self.password), verify=False)

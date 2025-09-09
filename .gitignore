@@ -1,0 +1,44 @@
+cat > .gitignore << 'EOF'
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Logs
+logs/
+*.log
+
+# Data files (may contain sensitive info)
+*.pkl
+automation_state.json
+automation_state.pkl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtual Environment
+myenv/
+env/
+venv/
+
+# Credentials (important!)
+.json
+*password*
+*secret*
+EOF

@@ -64,7 +64,7 @@ pipeline {
             }
         }
         
-        stage('Generate API Keys') {
+        stage('Generate FMC API Key') {
             steps {
                 sh 'python3 src/main.py --step api_keys'
             }

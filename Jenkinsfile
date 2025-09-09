@@ -69,6 +69,7 @@ pipeline {
                 sh 'python3 src/main.py --step api_keys'
             }
         }
+    }
         
     //     stage('Enable HA Interfaces') {
     //         steps {

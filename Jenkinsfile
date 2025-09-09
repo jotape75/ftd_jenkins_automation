@@ -101,13 +101,13 @@ pipeline {
     //     }
     // }
     
-    // post {
-    //     always {
-    //         archiveArtifacts artifacts: 'log/*.log', allowEmptyArchive: true
-    //         script {
-    //             env.PASSWORD = ""
-    //         }
-    //     }
+    post {
+        always {
+            archiveArtifacts artifacts: 'log/*.log', allowEmptyArchive: true
+            script {
+                env.PASSWORD = ""
+            }
+        }
         // success {
         //     echo "PA Automation completed successfully!"
         //     echo "HA Configuration: ${params.HA1_INTERFACE} (Control), ${params.HA2_INTERFACE} (Data)"

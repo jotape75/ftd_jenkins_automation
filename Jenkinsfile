@@ -61,7 +61,7 @@ pipeline {
                     env.CISCO_FTD_01 = params.CISCO_FTD_01
                     env.CISCO_FTD_02 = params.CISCO_FTD_02
                     
-                    // sh 'python3 src/update_templates.py'
+                    sh 'python3 src/update_templates.py'
                     
                     echo "Configuration Summary:"
                     echo "Target FMC: ${params.FMC_IP}"

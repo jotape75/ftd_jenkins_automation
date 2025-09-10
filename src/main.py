@@ -21,8 +21,6 @@ import datetime
 import os
 from pathlib import Path
 
-from projects.ftd_jenkins_automation.src.steps.step_02_add_dev_fmc import Step02_ADD_DEV_FMC
-
 # Get project root and define log file path
 def get_project_root():
     """Get the project root directory."""

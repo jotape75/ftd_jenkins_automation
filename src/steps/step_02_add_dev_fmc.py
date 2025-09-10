@@ -59,9 +59,8 @@ class Step02_ADD_DEV_FMC:
             self.fmc_ip = os.getenv('FMC_IP')
 
             with open('api_keys_data.pkl', 'rb') as f:
-                api_data = pickle.load(f)
-            
-            rest_api_headers = api_data['X-auth-access-token']
+                rest_api_headers = pickle.load(f)
+                   
             # Get credentials from Jenkins form parameters
             fmc_access_policy_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/accesspolicies"
             fmc_devices = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords"
@@ -102,7 +101,7 @@ class Step02_ADD_DEV_FMC:
             poll_interval = 10 
             pool_interval_reg = 30
             while True:
-                response_show = requests.get(fmc_devices, headers=headers, verify=False)
+                response_show = requests.get(fmc_devices, headers=rest_api_headers, verify=False)
                 response_show.raise_for_status()
                 devices = response_show.json().get('items', [])
                 found_device_names = [dev["name"] for dev in devices]
@@ -117,12 +116,12 @@ class Step02_ADD_DEV_FMC:
                 time.sleep(poll_interval)
                 waited_rec += poll_interval
             while True:
-                response_health_status = requests.get(fmc_devices, headers=headers, verify=False)
+                response_health_status = requests.get(fmc_devices, headers=rest_api_headers, verify=False)
                 response_health_status.raise_for_status()
                 devices = response_health_status.json().get('items', [])
                 for dev in devices:
                     if dev["name"] in device_names:
-                        detail_resp = requests.get(fmc_device_details_url.format(device_id=dev['id']), headers=headers, verify=False)
+                        detail_resp = requests.get(fmc_device_details_url.format(device_id=dev['id']), headers=rest_api_headers, verify=False)
                         detail_resp.raise_for_status()
                         dev_detail = detail_resp.json()
                         health = dev_detail.get("healthStatus", "").lower()
@@ -157,8 +156,7 @@ class Step02_ADD_DEV_FMC:
         from utils_ftd import FTD_DEVICES_TEMPLATE
 
         with open(FTD_DEVICES_TEMPLATE, 'r') as f:
-            self.ftd_devices_tmp = f.read()
-
-        logger.info("Loaded FTD devices template")
+            self.ftd_devices_tmp = json.load(f)  
+            logger.info("Loaded FTD devices template")
 
           

@@ -135,28 +135,28 @@ class TemplateUpdater:
         
     #     logger.info("Updated zones template with Jenkins parameters")
     
-    # def execute(self):
-    #     """Execute all template updates"""
-    #     try:
-    #         logger.info("Starting template updates with Jenkins parameters...")
-    #         logger.info(f"Parameters: {self.jenkins_params}")
+    def execute(self):
+        """Execute all template updates"""
+        try:
+            logger.info("Starting template updates with Jenkins parameters...")
+            logger.info(f"Parameters: {self.jenkins_params}")
             
-    #         # Create data directory if it doesn't exist
-    #         os.makedirs(self.data_dir, exist_ok=True)
+            # Create data directory if it doesn't exist
+            os.makedirs(self.data_dir, exist_ok=True)
             
-    #         # Update all templates
-    #         self.update_data_interface_template()
-    #         self.update_ha_interface_template() 
-    #         self.update_routing_template()
-    #         self.update_nat_template()
-    #         self.update_zones_template()
+            # Update all templates
+            self.update_devices_template()
+            # self.update_ha_interface_template() 
+            # self.update_routing_template()
+            # self.update_nat_template()
+            # self.update_zones_template()
             
-    #         logger.info("All templates updated successfully!")
-    #         return True
+            logger.info("All templates updated successfully!")
+            return True
             
-    #     except Exception as e:
-    #         logger.error(f"Error updating templates: {e}")
-    #         return False
+        except Exception as e:
+            logger.error(f"Error updating templates: {e}")
+            return False
 
 if __name__ == "__main__":
     updater = TemplateUpdater()

@@ -36,11 +36,11 @@ class TemplateUpdater:
     def _get_jenkins_params(self):
         """Get Jenkins parameters from environment variables"""
         return {
-            # HA Interfaces
-            'ha1_interface': os.getenv('HA1_INTERFACE', 'ethernet1/4'),
-            'ha2_interface': os.getenv('HA2_INTERFACE', 'ethernet1/5'),
-            
-            # Data Interface IPs 
+            # FTD Devices
+            'cisco_ftd_01': os.getenv('CISCO_FTD_01', '192.168.0.202'),
+            'cisco_ftd_02': os.getenv('CISCO_FTD_02', '192.168.0.203'),
+
+            # Data Interface IPs
             'ethernet1_1_ip_trust': os.getenv('ETHERNET1_1_IP_TRUST', '10.10.10.5/24'),
             'ethernet1_2_ip_untrust': os.getenv('ETHERNET1_2_IP_UNTRUST', '200.200.200.2/24'),
             'ethernet1_3_ip_dmz': os.getenv('ETHERNET1_3_IP_DMZ', '10.30.30.5/24'),
@@ -59,24 +59,22 @@ class TemplateUpdater:
             'dmz': os.getenv('DMZ', 'ethernet1/3')
         }
     
-    def update_data_interface_template(self):
-        """Update data interface template with Jenkins parameters"""
-        template_file = f"{self.data_dir}/data_interface.xml"
-        
+    def update_devices_template(self):
+        """Update devices template with Jenkins parameters"""
+        template_file = f"{self.data_dir}/fmc_devices.json"
+
         with open(template_file, 'r') as f:
             content = f.read()
         
         # Replace placeholders with Jenkins environment variables
-        content = content.replace('{ETHERNET1_1_IP_TRUST}', os.getenv('ETHERNET1_1_IP_TRUST', ''))
-        content = content.replace('{ETHERNET1_2_IP_UNTRUST}', os.getenv('ETHERNET1_2_IP_UNTRUST', ''))
-        content = content.replace('{ETHERNET1_3_IP_DMZ}', os.getenv('ETHERNET1_3_IP_DMZ', ''))
+        content = content.replace('{CISCO_FTD_01}', os.getenv('CISCO_FTD_01', ''))
+        content = content.replace('{CISCO_FTD_02}', os.getenv('CISCO_FTD_02', ''))
 
-            
         with open(template_file, 'w') as f:
             f.write(content)
-        
-        logger.info("Updated data interface template with Jenkins parameters")
-    
+
+        logger.info("Updated devices template with Jenkins parameters")
+
     def update_ha_interface_template(self):
         """
         HA interface template should NOT be updated here - 

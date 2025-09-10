@@ -21,6 +21,8 @@ import datetime
 import os
 from pathlib import Path
 
+from projects.ftd_jenkins_automation.src.steps.step_02_add_dev_fmc import Step02_ADD_DEV_FMC
+
 # Get project root and define log file path
 def get_project_root():
     """Get the project root directory."""
@@ -72,10 +74,10 @@ def main():
             step = Step01_APIKeys()
             success = step.execute()
             
-        # elif args.step == 'ha_interfaces':
-        #     from steps.step_02_ha_interfaces import Step02_HAInterfaces
-        #     step = Step02_HAInterfaces()
-        #     success = step.execute()
+        elif args.step == 'add_dev_fmc':
+            from steps.step_02_add_dev_fmc import Step02_ADD_DEV_FMC
+            step = Step02_ADD_DEV_FMC()
+            success = step.execute()
             
         # elif args.step == 'ha_config':
         #     from steps.step_03_ha_config import Step03_HAConfig

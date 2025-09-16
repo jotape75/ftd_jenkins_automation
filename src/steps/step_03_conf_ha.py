@@ -20,6 +20,8 @@ import json
 import sys
 import os
 import time
+
+from projects.ftd_jenkins_automation.src.utils_ftd import FTD_DEVICES_TEMPLATE
 # Add the src directory to the Python path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -48,6 +50,7 @@ class Step03_HAConfig:
         """
         try:
             devices_list = []  # Initialize an empty list to store devices
+            device_names = []  # Initialize an empty list to store device names
             poll_interval = 10
             self.load_devices_templates()
             self.fmc_ip = os.getenv('FMC_IP')
@@ -61,22 +64,28 @@ class Step03_HAConfig:
             fmc_ha_check_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}"
             fmc_devices = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords"
             fmc_device_details_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{device_id}}"
-            
+            fmc_dev_int_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{device_id}}/physicalinterfaces"
+
             response_ha = requests.get(fmc_devices, headers=rest_api_headers, verify=False)
             response_ha.raise_for_status() 
             devices = response_ha.json() # Get the first page of devices
             temp_devices_list = devices.get('items', []) # Get the list of devices
-            for id in temp_devices_list:
-                device_name = id['name'] # Get the name of each device
-                device_id = id['id'] # Get the ID of each device
-                response_int = requests.get(fmc_device_details_url.format(device_id=device_id), headers=rest_api_headers, verify=False)
-                response_int.raise_for_status()
-                temp_devices_interface = response_int.json().get('items', [])
-                for interface in temp_devices_interface:
-                    if interface['name'] == self.ha_interface:
-                        interface_id = interface['id'] # Get the ID of each device interface
-                        devices_list.append({"name": device_name, "id": device_id, "interface_id": interface_id}) # Append the device ID to the list
 
+            for name in self.ftd_devices_tmp["device_payload"]:
+                device_names.append(name['name']) # Append the device name to the list
+
+            for id in temp_devices_list:
+                if id['name'] in device_names:
+                    device_name = id['name'] # Get the name of each device
+                    device_id = id['id'] # Get the ID of each device
+                    response_int = requests.get(fmc_dev_int_url.format(device_id=device_id), headers=rest_api_headers, verify=False)
+                    response_int.raise_for_status()
+                    temp_devices_interface = response_int.json().get('items', [])
+                    for interface in temp_devices_interface:
+                        if interface['name'] == self.ha_interface:
+                            interface_id = interface['id'] # Get the ID of each device interface
+                            devices_list.append({"name": device_name, "id": device_id, "interface_id": interface_id}) # Append the device ID to the list
+            
             ha_payload = self.ftd_ha_tmp["ha_payload"]
             ha_payload["primary"]["id"] = devices_list[0]["id"]
             ha_payload["primary"]["name"] = devices_list[0]["name"]
@@ -132,8 +141,10 @@ class Step03_HAConfig:
             logger.error(f"Error: {e}")
             return False
     def load_devices_templates(self):
-        from utils_ftd import FTD_HA_TEMPLATE
+        from utils_ftd import FTD_HA_TEMPLATE, FTD_DEVICES_TEMPLATE
 
-        with open(FTD_HA_TEMPLATE, 'r') as f:
-            self.ftd_ha_tmp = json.load(f)  
+        with open(FTD_HA_TEMPLATE, 'r') as f0, open(FTD_DEVICES_TEMPLATE, 'r') as f1:
+            self.ftd_ha_tmp = json.load(f0)
             logger.info("Loaded FTD HA template")
+            self.ftd_devices_tmp = json.load(f1)
+            logger.info("Loaded FTD devices template")

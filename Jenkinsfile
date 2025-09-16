@@ -66,6 +66,8 @@ pipeline {
                     
                     echo "Configuration Summary:"
                     echo "Target FMC: ${params.FMC_IP}"
+                    echo "FTD Devices: ${params.CISCO_FTD_01}, ${params.CISCO_FTD_02}"
+                    echo "HA Interface: ${params.HA_INTERFACE}"
                 }
             }
         }

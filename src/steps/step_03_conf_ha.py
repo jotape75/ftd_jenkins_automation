@@ -74,7 +74,8 @@ class Step03_HAConfig:
                 device_names.append(name['name']) # Append the device name to the list
 
             for id in temp_devices_list:
-                if id['name'] in device_names:
+                if id['name'] in device_names: # Only process devices in which names are in device_names
+                    logger.info(f"Adding device {id['name']} - {id['id']} to HA pair configuration")
                     device_name = id['name'] # Get the name of each device
                     device_id = id['id'] # Get the ID of each device
                     response_int = requests.get(fmc_dev_int_url.format(device_id=device_id), headers=rest_api_headers, verify=False)

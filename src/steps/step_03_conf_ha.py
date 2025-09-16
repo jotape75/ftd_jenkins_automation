@@ -21,7 +21,6 @@ import sys
 import os
 import time
 
-from projects.ftd_jenkins_automation.src.utils_ftd import FTD_DEVICES_TEMPLATE
 # Add the src directory to the Python path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

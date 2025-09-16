@@ -77,10 +77,10 @@ def main():
             step = Step02_ADD_DEV_FMC()
             success = step.execute()
             
-        # elif args.step == 'ha_config':
-        #     from steps.step_03_ha_config import Step03_HAConfig
-        #     step = Step03_HAConfig()
-        #     success = step.execute()
+        elif args.step == 'conf_ha':
+            from steps.step_03_conf_ha import Step03_HAConfig
+            step = Step03_HAConfig()
+            success = step.execute()
         # elif args.step == 'identify_active':
         #     from steps.step_04_identify_active import Step04_IdentifyActive
         #     step = Step04_IdentifyActive()

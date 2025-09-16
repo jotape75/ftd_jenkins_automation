@@ -13,16 +13,13 @@ Key Features:
 - Comprehensive error handling and logging
 """
 
-from wsgiref import headers
 import requests
 import logging
 import pickle
 import json
-import xml.etree.ElementTree as ET
 import sys
 import os
 import time
-import datetime
 # Add the src directory to the Python path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

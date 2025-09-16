@@ -32,7 +32,7 @@ pipeline {
         password(name: 'PASSWORD', description: 'FMC Password')
         string(name: 'CISCO_FTD_01', defaultValue: '192.168.0.202', description: 'Cisco FTD 01 IP Address')
         string(name: 'CISCO_FTD_02', defaultValue: '192.168.0.203', description: 'Cisco FTD 02 IP Address')
-
+        choice(name: 'HA_INTERFACE', choices: ['GigabitEthernet0/3', 'GigabitEthernet0/4', 'GigabitEthernet0/5'], description: 'HA Interface')
     }
     
     stages {
@@ -60,7 +60,8 @@ pipeline {
                     env.PASSWORD = params.PASSWORD
                     env.CISCO_FTD_01 = params.CISCO_FTD_01
                     env.CISCO_FTD_02 = params.CISCO_FTD_02
-                    
+                    env.HA_INTERFACE = params.HA_INTERFACE
+
                     sh 'python3 src/update_templates.py'
                     
                     echo "Configuration Summary:"
@@ -78,6 +79,11 @@ pipeline {
         stage('Add devices to FMC') {
             steps {
                 sh 'python3 src/main.py --step add_dev_fmc'
+            }
+        }
+        stage('Configure HA Settings') {
+            steps {
+                sh 'python3 src/main.py --step conf_ha'
             }
         }
     }

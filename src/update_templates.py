@@ -60,7 +60,7 @@ class TemplateUpdater:
         }
     
     def update_devices_template(self):
-        """Update devices template with Jenkins parameters"""
+        """Update fmc_devices template with Jenkins parameters"""
         template_file = f"{self.data_dir}/fmc_devices.json"
 
         with open(template_file, 'r') as f:
@@ -73,7 +73,22 @@ class TemplateUpdater:
         with open(template_file, 'w') as f:
             f.write(content)
 
-        logger.info("Updated devices template with Jenkins parameters")
+        logger.info("Updated fmc_devices template with Jenkins parameters")
+
+    def update_ftd_ha_payload(self):
+        """Update ftd_ha_payload template with Jenkins parameters"""
+        template_file = f"{self.data_dir}/fmc_ha_payload.json"
+
+        with open(template_file, 'r') as f:
+            content = f.read()
+
+        # Replace placeholders with Jenkins environment variables
+        content = content.replace('{HA_INTERFACE}', os.getenv('HA_INTERFACE', ''))
+
+        with open(template_file, 'w') as f:
+            f.write(content)
+
+        logger.info("Updated ftd_ha_payload with Jenkins parameters")
 
     # def update_ha_interface_template(self):
     #     """
@@ -84,56 +99,7 @@ class TemplateUpdater:
     #     # Don't update this template - leave {ha1_ip} as placeholder
     #     return
     
-    # def update_routing_template(self):
-    #     """Update routing template with Jenkins parameters"""
-    #     template_file = f"{self.data_dir}/static_route_template.xml"
-        
-    #     with open(template_file, 'r') as f:
-    #         content = f.read()
-        
-    #     # Replace placeholders with Jenkins environment variables 
-    #     content = content.replace('{STATIC_ROUTE_NETWORK}', os.getenv('STATIC_ROUTE_NETWORK', '0.0.0.0/0'))
-    #     content = content.replace('{STATIC_ROUTE_NEXTHOP}', os.getenv('STATIC_ROUTE_NEXTHOP', ''))
-    #     content = content.replace('{untrust}', os.getenv('UNTRUST', 'ethernet1/2'))  
-        
-    #     with open(template_file, 'w') as f:
-    #         f.write(content)
-        
-    #     logger.info("Updated routing template with Jenkins parameters")
 
-    # def update_nat_template(self):
-    #     """Update NAT template with Jenkins parameters"""
-    #     template_file = f"{self.data_dir}/source_nat_template.xml"
-        
-    #     with open(template_file, 'r') as f:
-    #         content = f.read()
-        
-    #     content = content.replace('{ETHERNET1_2_IP_UNTRUST}', os.getenv('ETHERNET1_2_IP_UNTRUST', ''))  
-    #     content = content.replace('{untrust}', os.getenv('UNTRUST', 'ethernet1/2'))  
-    #     content = content.replace('{trust}', os.getenv('TRUST', 'ethernet1/1'))      
-    #     content = content.replace('{dmz}', os.getenv('DMZ', 'ethernet1/3'))         
-        
-    #     with open(template_file, 'w') as f:
-    #         f.write(content)
-        
-    #     logger.info("Updated NAT template with Jenkins parameters")
-    
-    # def update_zones_template(self):
-    #     """Update zones template with Jenkins parameters"""
-    #     template_file = f"{self.data_dir}/zones.xml"
-        
-    #     with open(template_file, 'r') as f:
-    #         content = f.read()
-        
-    #     # Replace placeholders with Jenkins environment variables
-    #     content = content.replace('{TRUST}', os.getenv('TRUST', ''))
-    #     content = content.replace('{UNTRUST}', os.getenv('UNTRUST', ''))
-    #     content = content.replace('{DMZ}', os.getenv('DMZ', ''))
-        
-    #     with open(template_file, 'w') as f:
-    #         f.write(content)
-        
-    #     logger.info("Updated zones template with Jenkins parameters")
     
     def execute(self):
         """Execute all template updates"""
@@ -146,7 +112,7 @@ class TemplateUpdater:
             
             # Update all templates
             self.update_devices_template()
-            # self.update_ha_interface_template() 
+            self.update_ftd_ha_payload() 
             # self.update_routing_template()
             # self.update_nat_template()
             # self.update_zones_template()

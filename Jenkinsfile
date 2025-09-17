@@ -83,7 +83,7 @@ pipeline {
 
         stage('FTD Initial Configuration') {
             steps {
-                sh 'python3 src/main.py --step ftd_initial_config'
+                sh 'python3 src/main.py --step ftd_initial_conf'
             }
         }
 

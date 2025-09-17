@@ -17,7 +17,6 @@ import sys
 import os
 from netmiko import ConnectHandler, NetmikoTimeoutException, NetmikoAuthenticationException
 
-
 # Add the src directory to the Python path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

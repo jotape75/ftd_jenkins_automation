@@ -104,6 +104,11 @@ class Step00_FTDInitialConf:
                     import traceback
                     logger.error(f"Full traceback: {traceback.format_exc()}")
                     return False
+            logger.info(f"\nInitial configuration applied to {data['name']}:\n{output_2}")
+            return True
+        except Exception as e:  
+            logger.error(f"Unexpected error in FTD initial configuration: {e}")
+            return False
 
     def load_devices_templates(self):
         from utils_ftd import FTD_DEVICES_TEMPLATE

@@ -25,18 +25,20 @@ logger = logging.getLogger()
 
 class Step00_FTDInitialConf:
     """
-    Generate API keys for FMC.
+    Configure FTD devices for initial manager registration.
     
     Uses credentials and firewall hosts from Jenkins form parameters.
     """
     
     def __init__(self):
         """
-        Initialize API key generation step.
+        Initialize FTD initial configuration step.
         """
+        pass
+        
     def execute(self):
         """
-        Execute API key generation for all devices.
+        Execute FTD initial configuration for all devices.
         Uses credentials from Jenkins form parameters.
         
         Returns:
@@ -75,8 +77,6 @@ class Step00_FTDInitialConf:
                         # Use send_command_timing to handle interactive prompts
                         output_1 = net_connect.send_command_timing(commands, delay_factor=10)
                         logger.info(f"Command output: {output_1}")
-                        output_2 = net_connect.send_command_timing('yes', delay_factor=3)
-
                         
                         # Check for confirmation prompt and respond
                         expect_string_01 = 'Do you want to continue[yes/no]:'
@@ -87,14 +87,17 @@ class Step00_FTDInitialConf:
                         else:
                             logger.warning(f"Expected confirmation prompt not found for {data['name']}")
                             logger.info(f"Full command output was: {output_1}")
-                            pass
+                            output_2 = output_1
+                            
                         # Check for registration success and get manager status
                         expect_string_02 = 'Please make note of reg_key as this will be required while adding Device in FMC:'
-                        if expect_string_02 in output_1 or output_2:
+                        if expect_string_02 in output_1 or expect_string_02 in output_2:
                             logger.info("Manager registration successful, checking status")
-                            output_3 = net_connect.send_command('show managers', delay_factor=3)
-                            time.sleep(8)
-                            logger.info(f"Manager status on {data['name']}:\n{output_3}")
+                            try:
+                                output_3 = net_connect.send_command_timing('show managers', delay_factor=5)
+                                logger.info(f"Manager status on {data['name']}:\n{output_3}")
+                            except Exception as show_error:
+                                logger.warning(f"Could not get manager status for {data['name']}: {show_error}")
                         else:
                             logger.warning("Manager registration confirmation not found")
                             logger.info(f"Registration output: {output_2}")
@@ -107,8 +110,10 @@ class Step00_FTDInitialConf:
                     import traceback
                     logger.error(f"Full traceback: {traceback.format_exc()}")
                     return False
-            logger.info(f"\nInitial configuration applied to {data['name']}:\n{output_2}")
+                    
+            logger.info("FTD initial configuration completed successfully for all devices")
             return True
+            
         except Exception as e:  
             logger.error(f"Unexpected error in FTD initial configuration: {e}")
             return False

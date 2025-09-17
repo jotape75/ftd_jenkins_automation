@@ -27,7 +27,7 @@ pipeline {
     agent any
     
     parameters {
-        // string(name: 'FMC_IP', defaultValue: '192.168.0.201', description: 'FMC IP Addresses')
+        string(name: 'FMC_IP', defaultValue: '192.168.0.201', description: 'FMC IP Addresses')
         // string(name: 'FMC_USERNAME', defaultValue: 'api_user', description: 'FMC Username')
         // password(name: 'FMC_PASSWORD', description: 'FMC Password')
         string(name: 'FW_HOSTNAME_01', defaultValue: 'ciscoftd01', description: 'Cisco FTD 01 Hostname')
@@ -59,7 +59,7 @@ pipeline {
                     echo "Setting environment variables and updating templates..."
                     
                     // Set environment variables with CORRECT parameter names
-                    // env.FMC_IP = params.FMC_IP
+                    env.FMC_IP = params.FMC_IP
                     // env.FMC_USERNAME = params.FMC_USERNAME
                     // env.FMC_PASSWORD = params.FMC_PASSWORD
                     env.FW_HOSTNAME_01 = params.FW_HOSTNAME_01
@@ -73,7 +73,7 @@ pipeline {
                     sh 'python3 src/update_templates.py'
                     
                     echo "Configuration Summary:"
-                    // echo "Target FMC: ${params.FMC_IP}"
+                    echo "Target FMC: ${params.FMC_IP}"
                     echo "FTD Devices  IP: ${params.FW_HOSTNAME_01}, ${params.IP_ADD_FW_01}"
                     echo "FTD Devices  IP: ${params.FW_HOSTNAME_02}, ${params.IP_ADD_FW_02}"
                     // echo "HA Interface: ${params.HA_INTERFACE}"

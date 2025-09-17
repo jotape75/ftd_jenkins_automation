@@ -67,8 +67,9 @@ class Step00_FTDInitialConf:
                     with ConnectHandler(**device) as net_connect:
                         logger.info(f"Connected to {data['name']}. Sending initial configuration commands...")
                         commands = f'configure manager add {self.fmc_ip} {data["regKey"]}'
-                        
                         output_1 = net_connect.send_config_set(commands)
+                        logger.info(output_1)
+
                         expect_string_01 = r'Do you want to continue\[yes/no\]:'
                         if expect_string_01 in output_1:
                             output_2 = net_connect.send_command('yes', delay_factor=2)

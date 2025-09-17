@@ -16,6 +16,7 @@ import json
 import sys
 import os
 from netmiko import ConnectHandler, NetmikoTimeoutException, NetmikoAuthenticationException
+import time
 
 # Add the src directory to the Python path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -92,6 +93,7 @@ class Step00_FTDInitialConf:
                         if expect_string_02 in output_1 or output_2:
                             logger.info("Manager registration successful, checking status")
                             output_3 = net_connect.send_command('show managers', delay_factor=10)
+                            time.sleep(8)
                             logger.info(f"Manager status on {data['name']}:\n{output_3}")
                         else:
                             logger.warning("Manager registration confirmation not found")

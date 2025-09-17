@@ -89,7 +89,7 @@ class Step00_FTDInitialConf:
                             pass
                         # Check for registration success and get manager status
                         expect_string_02 = 'Please make note of reg_key as this will be required while adding Device in FMC:'
-                        if expect_string_02 in output_2:
+                        if expect_string_02 in output_1 or output_2:
                             logger.info("Manager registration successful, checking status")
                             output_3 = net_connect.send_command('show managers', delay_factor=10)
                             logger.info(f"Manager status on {data['name']}:\n{output_3}")

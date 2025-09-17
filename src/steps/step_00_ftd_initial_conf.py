@@ -76,7 +76,7 @@ class Step00_FTDInitialConf:
                         logger.info(f"Command output: {output_1}")
                         
                         # Check for confirmation prompt and respond
-                        expect_string_01 = r'Do you want to continue\[yes/no\]:'
+                        expect_string_01 = 'Do you want to continue[yes/no]:'
                         if expect_string_01 in output_1:
                             logger.info("Confirmation prompt detected, sending 'yes'")
                             output_2 = net_connect.send_command_timing('yes', delay_factor=3)
@@ -87,7 +87,7 @@ class Step00_FTDInitialConf:
                             output_2 = output_1
                         
                         # Check for registration success and get manager status
-                        expect_string_02 = r'Please make note of reg_key as this will be required while adding Device in FMC:'
+                        expect_string_02 = 'Please make note of reg_key as this will be required while adding Device in FMC:'
                         if expect_string_02 in output_2:
                             logger.info("Manager registration successful, checking status")
                             output_3 = net_connect.send_command('show managers', delay_factor=3)

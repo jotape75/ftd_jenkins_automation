@@ -67,7 +67,7 @@ def main():
         logger.info(f"Starting FTD Automation - Log file: {LOG_FILE}")
         logger.info(f"Executing step: {args.step}")
         
-        if args.step == 'api_keys':
+        if args.step == 'ftd_initial_conf':
             from steps.step_00_ftd_initial_conf import Step00_FTDInitialConf
             step = Step00_FTDInitialConf()
             success = step.execute()

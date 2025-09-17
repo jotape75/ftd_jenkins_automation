@@ -30,8 +30,11 @@ pipeline {
         string(name: 'FMC_IP', defaultValue: '192.168.0.201', description: 'FMC IP Addresses')
         string(name: 'USERNAME', defaultValue: 'api_user', description: 'FMC Username')
         password(name: 'PASSWORD', description: 'FMC Password')
-        string(name: 'CISCO_FTD_01', defaultValue: '192.168.0.202', description: 'Cisco FTD 01 IP Address')
-        string(name: 'CISCO_FTD_02', defaultValue: '192.168.0.203', description: 'Cisco FTD 02 IP Address')
+        string(name: 'FW_HOSTNAME_01', defaultValue: 'ciscoftd01', description: 'Cisco FTD 01 Hostname')
+        string(name: 'IP_ADD_FW_01', defaultValue: '192.168.0.202', description: 'Cisco FTD 01 IP Address')
+        string(name: 'FW_HOSTNAME_02', defaultValue: 'ciscoftd02', description: 'Cisco FTD 02 Hostname')
+        string(name: 'IP_ADD_FW_02', defaultValue: '192.168.0.203', description: 'Cisco FTD 02 IP Address')
+        password(name: 'REGKEY', description: 'Key for FMC devices registration')
         choice(name: 'HA_INTERFACE', choices: ['GigabitEthernet0/3', 'GigabitEthernet0/4', 'GigabitEthernet0/5'], description: 'HA Interface')
     }
     
@@ -58,15 +61,19 @@ pipeline {
                     env.FMC_IP = params.FMC_IP
                     env.USERNAME = params.USERNAME
                     env.PASSWORD = params.PASSWORD
-                    env.CISCO_FTD_01 = params.CISCO_FTD_01
-                    env.CISCO_FTD_02 = params.CISCO_FTD_02
+                    env.FW_HOSTNAME_01 = params.FW_HOSTNAME_01
+                    env.FW_HOSTNAME_02 = params.FW_HOSTNAME_02
+                    env.IP_ADD_FW_01 = params.IP_ADD_FW_01
+                    env.IP_ADD_FW_02 = params.IP_ADD_FW_02
+                    env.REGKEY = params.REGKEY
                     env.HA_INTERFACE = params.HA_INTERFACE
 
                     sh 'python3 src/update_templates.py'
                     
                     echo "Configuration Summary:"
                     echo "Target FMC: ${params.FMC_IP}"
-                    echo "FTD Devices: ${params.CISCO_FTD_01}, ${params.CISCO_FTD_02}"
+                    echo "FTD Devices  IP: ${params.FW_HOSTNAME_01}, ${params.IP_ADD_FW_01}"
+                    echo "FTD Devices  IP: ${params.FW_HOSTNAME_02}, ${params.IP_ADD_FW_02}"
                     echo "HA Interface: ${params.HA_INTERFACE}"
                 }
             }

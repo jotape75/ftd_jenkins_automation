@@ -37,8 +37,8 @@ class TemplateUpdater:
         """Get Jenkins parameters from environment variables"""
         return {
             # FTD Devices
-            'cisco_ftd_01': os.getenv('CISCO_FTD_01', '192.168.0.202'),
-            'cisco_ftd_02': os.getenv('CISCO_FTD_02', '192.168.0.203'),
+            # 'cisco_ftd_01': os.getenv('IP_ADD_FW_01', '192.168.0.202'),
+            # 'cisco_ftd_02': os.getenv('IP_ADD_FW_02', '192.168.0.203'),
 
             # # Data Interface IPs
             # 'ethernet1_1_ip_trust': os.getenv('ETHERNET1_1_IP_TRUST', '10.10.10.5/24'),
@@ -67,8 +67,11 @@ class TemplateUpdater:
             content = f.read()
         
         # Replace placeholders with Jenkins environment variables
-        content = content.replace('{CISCO_FTD_01}', os.getenv('CISCO_FTD_01', ''))
-        content = content.replace('{CISCO_FTD_02}', os.getenv('CISCO_FTD_02', ''))
+        content = content.replace('{IP_ADD_FW_01}', os.getenv('IP_ADD_FW_01', ''))
+        content = content.replace('{IP_ADD_FW_02}', os.getenv('IP_ADD_FW_02', ''))
+        content = content.replace('{FW_HOSTNAME_01}', os.getenv('FW_HOSTNAME_01', ''))
+        content = content.replace('{FW_HOSTNAME_02}', os.getenv('FW_HOSTNAME_02', ''))
+        content = content.replace('{REGKEY}', os.getenv('REGKEY', ''))
 
         with open(template_file, 'w') as f:
             f.write(content)

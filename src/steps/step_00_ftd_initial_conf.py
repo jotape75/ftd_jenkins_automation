@@ -74,6 +74,8 @@ class Step00_FTDInitialConf:
                         # Use send_command_timing to handle interactive prompts
                         output_1 = net_connect.send_command_timing(commands, delay_factor=10)
                         logger.info(f"Command output: {output_1}")
+                        output_2 = net_connect.send_command_timing('yes', delay_factor=3)
+
                         
                         # Check for confirmation prompt and respond
                         expect_string_01 = 'Do you want to continue[yes/no]:'

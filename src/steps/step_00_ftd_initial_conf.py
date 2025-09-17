@@ -72,7 +72,7 @@ class Step00_FTDInitialConf:
                         logger.info(f"Sending command: {commands}")
                         
                         # Use send_command_timing to handle interactive prompts
-                        output_1 = net_connect.send_command_timing(commands, delay_factor=3)
+                        output_1 = net_connect.send_command_timing(commands, delay_factor=10)
                         logger.info(f"Command output: {output_1}")
                         
                         # Check for confirmation prompt and respond
@@ -84,13 +84,12 @@ class Step00_FTDInitialConf:
                         else:
                             logger.warning(f"Expected confirmation prompt not found for {data['name']}")
                             logger.info(f"Full command output was: {output_1}")
-                            output_2 = output_1
-                        
+                            pass
                         # Check for registration success and get manager status
                         expect_string_02 = 'Please make note of reg_key as this will be required while adding Device in FMC:'
                         if expect_string_02 in output_2:
                             logger.info("Manager registration successful, checking status")
-                            output_3 = net_connect.send_command('show managers', delay_factor=3)
+                            output_3 = net_connect.send_command('show managers', delay_factor=10)
                             logger.info(f"Manager status on {data['name']}:\n{output_3}")
                         else:
                             logger.warning("Manager registration confirmation not found")

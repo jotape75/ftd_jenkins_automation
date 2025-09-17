@@ -52,12 +52,12 @@ class Step01_APIKeys:
         """
         try:
             # Get credentials from Jenkins form parameters
-            self.username = os.getenv('USERNAME')
-            self.password = os.getenv('PASSWORD')
+            self.username = os.getenv('FMC_USERNAME')
+            self.password = os.getenv('FMC_PASSWORD')
             self.fmc_ip = os.getenv('FMC_IP')
 
             if not self.username or not self.password or not self.fmc_ip:
-                raise Exception("USERNAME, PASSWORD, and FMC_IP must be specified in Jenkins form")
+                raise Exception("FMC_USERNAME, FMC_PASSWORD, and FMC_IP must be specified in Jenkins form")
 
             # Create credentials list
             

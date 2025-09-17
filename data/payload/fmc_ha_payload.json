@@ -1,7 +1,7 @@
 {
     "ha_payload": {
         "type": "DeviceHAPair",
-        "name": "ciscoftd_HA",
+        "name": "{HA_NAME}",
         "primary": {
             "id": "",
             "name": ""

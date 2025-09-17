@@ -27,15 +27,16 @@ pipeline {
     agent any
     
     parameters {
-        string(name: 'FMC_IP', defaultValue: '192.168.0.201', description: 'FMC IP Addresses')
-        string(name: 'USERNAME', defaultValue: 'api_user', description: 'FMC Username')
-        password(name: 'PASSWORD', description: 'FMC Password')
+        // string(name: 'FMC_IP', defaultValue: '192.168.0.201', description: 'FMC IP Addresses')
+        // string(name: 'FMC_USERNAME', defaultValue: 'api_user', description: 'FMC Username')
+        // password(name: 'FMC_PASSWORD', description: 'FMC Password')
         string(name: 'FW_HOSTNAME_01', defaultValue: 'ciscoftd01', description: 'Cisco FTD 01 Hostname')
         string(name: 'IP_ADD_FW_01', defaultValue: '192.168.0.202', description: 'Cisco FTD 01 IP Address')
         string(name: 'FW_HOSTNAME_02', defaultValue: 'ciscoftd02', description: 'Cisco FTD 02 Hostname')
         string(name: 'IP_ADD_FW_02', defaultValue: '192.168.0.203', description: 'Cisco FTD 02 IP Address')
-        password(name: 'REGKEY', description: 'Key for FMC devices registration')
-        choice(name: 'HA_INTERFACE', choices: ['GigabitEthernet0/3', 'GigabitEthernet0/4', 'GigabitEthernet0/5'], description: 'HA Interface')
+        string(name: 'SSH_ADMIN_USERNAME', defaultValue: 'admin', description: 'SSH admin username for FTD devices')
+        password(name: 'SSH_ADMIN_PASSWORD', description: 'SSH admin password for FTD devices')
+        // choice(name: 'HA_INTERFACE', choices: ['GigabitEthernet0/3', 'GigabitEthernet0/4', 'GigabitEthernet0/5'], description: 'HA Interface')
     }
     
     stages {
@@ -58,43 +59,50 @@ pipeline {
                     echo "Setting environment variables and updating templates..."
                     
                     // Set environment variables with CORRECT parameter names
-                    env.FMC_IP = params.FMC_IP
-                    env.USERNAME = params.USERNAME
-                    env.PASSWORD = params.PASSWORD
+                    // env.FMC_IP = params.FMC_IP
+                    // env.FMC_USERNAME = params.FMC_USERNAME
+                    // env.FMC_PASSWORD = params.FMC_PASSWORD
                     env.FW_HOSTNAME_01 = params.FW_HOSTNAME_01
                     env.FW_HOSTNAME_02 = params.FW_HOSTNAME_02
                     env.IP_ADD_FW_01 = params.IP_ADD_FW_01
                     env.IP_ADD_FW_02 = params.IP_ADD_FW_02
-                    env.REGKEY = params.REGKEY
-                    env.HA_INTERFACE = params.HA_INTERFACE
+                    env.SSH_ADMIN_USERNAME = params.SSH_ADMIN_USERNAME
+                    env.SSH_ADMIN_PASSWORD = params.SSH_ADMIN_PASSWORD
+                    // env.HA_INTERFACE = params.HA_INTERFACE
 
                     sh 'python3 src/update_templates.py'
                     
                     echo "Configuration Summary:"
-                    echo "Target FMC: ${params.FMC_IP}"
+                    // echo "Target FMC: ${params.FMC_IP}"
                     echo "FTD Devices  IP: ${params.FW_HOSTNAME_01}, ${params.IP_ADD_FW_01}"
                     echo "FTD Devices  IP: ${params.FW_HOSTNAME_02}, ${params.IP_ADD_FW_02}"
-                    echo "HA Interface: ${params.HA_INTERFACE}"
+                    // echo "HA Interface: ${params.HA_INTERFACE}"
                 }
             }
         }
+
+        stage('FTD Initial Configuration') {
+            steps {
+                sh 'python3 src/main.py --step ftd_initial_config'
+            }
+        }
+
+        // stage('Generate FMC API Key') {
+        //     steps {
+        //         sh 'python3 src/main.py --step api_keys'
+        //     }
+        // }
         
-        stage('Generate FMC API Key') {
-            steps {
-                sh 'python3 src/main.py --step api_keys'
-            }
-        }
-        
-        stage('Add devices to FMC') {
-            steps {
-                sh 'python3 src/main.py --step add_dev_fmc'
-            }
-        }
-        stage('Configure HA Settings') {
-            steps {
-                sh 'python3 src/main.py --step conf_ha'
-            }
-        }
+        // stage('Add devices to FMC') {
+        //     steps {
+        //         sh 'python3 src/main.py --step add_dev_fmc'
+        //     }
+        // }
+        // stage('Configure HA Settings') {
+        //     steps {
+        //         sh 'python3 src/main.py --step conf_ha'
+        //     }
+        // }
     }
     // stages {
     //     stage('Configure HA Settings') {

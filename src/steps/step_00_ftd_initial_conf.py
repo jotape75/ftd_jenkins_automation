@@ -1,0 +1,100 @@
+"""
+Step 0: FTD Initial Configuration
+
+Configures FTD devices with initial manager settings to connect to FMC.
+This step establishes the SSH connection to each FTD device and configures
+the manager registration for subsequent FMC management.
+
+Key Features:
+- Dynamic credential loading from Jenkins environment variables
+- SSH-based FTD initial configuration with error handling
+- Interactive prompt handling for manager registration
+"""
+
+import logging
+import json
+import sys
+import os
+from netmiko import ConnectHandler, NetmikoTimeoutException, NetmikoAuthenticationException
+
+
+# Add the src directory to the Python path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+logger = logging.getLogger()
+
+class Step00_FTDInitialConf:
+    """
+    Generate API keys for FMC.
+    
+    Uses credentials and firewall hosts from Jenkins form parameters.
+    """
+    
+    def __init__(self):
+        """
+        Initialize API key generation step.
+        """
+    def execute(self):
+        """
+        Execute API key generation for all devices.
+        Uses credentials from Jenkins form parameters.
+        
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            self.load_devices_templates()
+
+            # Get credentials from Jenkins form parameters
+            self.username = os.getenv('SSH_ADMIN_USERNAME')
+            self.password = os.getenv('SSH_ADMIN_PASSWORD')
+            self.fmc_ip = os.getenv('FMC_IP')
+
+            if not self.username or not self.password:
+                raise Exception("SSH_ADMIN_USERNAME, SSH_ADMIN_PASSWORD must be specified in Jenkins form")
+
+            logger.info(f"Loaded credentials for FTD from Jenkins parameters")
+            logger.info(f"Username: {self.username}")
+
+            for data in self.ftd_devices_tmp["device_payload"]:
+                device = {
+                    'device_type': 'cisco_ftd',
+                    'host': data['hostName'],
+                    'username': self.username,
+                    'password': self.password,  
+                }
+                try:
+                    logger.info(f"Connecting to FTD device {data['name']} at {data['hostName']}...")
+                    with ConnectHandler(**device) as net_connect:
+                        logger.info(f"Connected to {data['name']}. Sending initial configuration commands...")
+                        commands = f'configure manager add {self.fmc_ip} {data["regKey"]}'
+                        
+                        output_1 = net_connect.send_config_set(commands)
+                        expect_string_01 = r'Do you want to continue\[yes/no\]:'
+                        if expect_string_01 in output_1:
+                            output_2 = net_connect.send_command('yes', delay_factor=2)
+                        else:
+                            logger.warning(f"Expected confirmation prompt not found for {data['name']}")
+                            logger.info(f"Command output was: {output_1}")
+                        expect_string_02 = r'Please make note of reg_key as this will be required while adding Device in FMC:'
+                        if expect_string_02 in output_2:
+                            output_3 = net_connect.send_command('show managers', delay_factor=2)
+                        logger.info(f"Manager status on {data['name']}:\n{output_3}")
+                except (NetmikoTimeoutException, NetmikoAuthenticationException) as e:
+                    logger.error(f"Connection error for device {data['name']} at {data['hostName']}: {e}")
+                    return False
+                except Exception as e:
+                    logger.error(f"Unexpected error for device {data['name']} at {data['hostName']}: {e}")
+                    return False
+            logger.info(f"\nInitial configuration applied to {data['name']}:\n{output_2}")
+            return True
+        except Exception as e:  # ✅ Add this
+            logger.error(f"Unexpected error in FTD initial configuration: {e}")
+            return False
+
+    def load_devices_templates(self):
+        from utils_ftd import FTD_DEVICES_TEMPLATE
+
+        with open(FTD_DEVICES_TEMPLATE, 'r') as f:
+            self.ftd_devices_tmp = json.load(f)  
+            logger.info("Loaded FTD devices template")

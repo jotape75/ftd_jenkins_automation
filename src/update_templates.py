@@ -86,6 +86,8 @@ class TemplateUpdater:
             content = f.read()
 
         # Replace placeholders with Jenkins environment variables
+        HA_NAME = f'{os.getenv("FW_HOSTNAME_01", "")}_HA'
+        content = content.replace('{HA_NAME}', HA_NAME)
         content = content.replace('{HA_INTERFACE}', os.getenv('HA_INTERFACE', ''))
 
         with open(template_file, 'w') as f:

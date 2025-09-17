@@ -68,21 +68,25 @@ class Step00_FTDInitialConf:
                         logger.info(f"Connected to {data['name']}. Sending initial configuration commands...")
                         commands = 'configure manager add 192.168.0.201 cisco123'
                         output_1 = net_connect.send_config_set(commands)
+                        output_2 = net_connect.send_command('yes', delay_factor=2)
+                        output_3 = net_connect.send_command('show managers', delay_factor=2)
                         expect_string_01 = r'Do you want to continue\[yes/no\]:'
                         if expect_string_01 in output_1:
-                            output_2 = net_connect.send_command('yes', delay_factor=2)
+                            output_2
                         else:
                             logger.warning(f"Expected confirmation prompt not found for {data['name']}")
                             logger.info(f"Command output was: {output_1}")
                         expect_string_02 = r'Please make note of reg_key as this will be required while adding Device in FMC:'
                         if expect_string_02 in output_2:
-                            output_3 = net_connect.send_command('show managers', delay_factor=2)
+                            output_3 
                         logger.info(f"Manager status on {data['name']}:\n{output_3}")
                 except (NetmikoTimeoutException, NetmikoAuthenticationException) as e:
                     logger.error(f"Connection error for device {data['name']} at {data['hostName']}: {e}")
                     return False
                 except Exception as e:
-                    logger.error(f"Unexpected error for device {data['name']} at {data['hostName']}: {e}")
+                    logger.error(f"Unexpected error for device {data['name']} at {data['hostName']}: {type(e).__name__}: {str(e)}")
+                    import traceback
+                    logger.error(f"Full traceback: {traceback.format_exc()}")
                     return False
             logger.info(f"\nInitial configuration applied to {data['name']}:\n{output_2}")
             return True

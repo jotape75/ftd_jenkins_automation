@@ -66,20 +66,36 @@ class Step00_FTDInitialConf:
                     logger.info(f"Connecting to FTD device {data['name']} at {data['hostName']}...")
                     with ConnectHandler(**device) as net_connect:
                         logger.info(f"Connected to {data['name']}. Sending initial configuration commands...")
+                        
+                        # Send the manager add command
                         commands = f'configure manager add {self.fmc_ip} {data["regKey"]}'
-                        output_1 = net_connect.send_command(commands)
-                        output_2 = net_connect.send_command('yes', delay_factor=2)
-                        output_3 = net_connect.send_command('show managers', delay_factor=2)
+                        logger.info(f"Sending command: {commands}")
+                        
+                        # Use send_command_timing to handle interactive prompts
+                        output_1 = net_connect.send_command_timing(commands, delay_factor=3)
+                        logger.info(f"Command output: {output_1}")
+                        
+                        # Check for confirmation prompt and respond
                         expect_string_01 = r'Do you want to continue\[yes/no\]:'
                         if expect_string_01 in output_1:
-                            output_2
+                            logger.info("Confirmation prompt detected, sending 'yes'")
+                            output_2 = net_connect.send_command_timing('yes', delay_factor=3)
+                            logger.info(f"Confirmation response: {output_2}")
                         else:
                             logger.warning(f"Expected confirmation prompt not found for {data['name']}")
-                            logger.info(f"Command output was: {output_1}")
+                            logger.info(f"Full command output was: {output_1}")
+                            output_2 = output_1
+                        
+                        # Check for registration success and get manager status
                         expect_string_02 = r'Please make note of reg_key as this will be required while adding Device in FMC:'
                         if expect_string_02 in output_2:
-                            output_3 
-                        logger.info(f"Manager status on {data['name']}:\n{output_3}")
+                            logger.info("Manager registration successful, checking status")
+                            output_3 = net_connect.send_command('show managers', delay_factor=3)
+                            logger.info(f"Manager status on {data['name']}:\n{output_3}")
+                        else:
+                            logger.warning("Manager registration confirmation not found")
+                            logger.info(f"Registration output: {output_2}")
+                            
                 except (NetmikoTimeoutException, NetmikoAuthenticationException) as e:
                     logger.error(f"Connection error for device {data['name']} at {data['hostName']}: {e}")
                     return False
@@ -88,11 +104,6 @@ class Step00_FTDInitialConf:
                     import traceback
                     logger.error(f"Full traceback: {traceback.format_exc()}")
                     return False
-            logger.info(f"\nInitial configuration applied to {data['name']}:\n{output_2}")
-            return True
-        except Exception as e:  # ✅ Add this
-            logger.error(f"Unexpected error in FTD initial configuration: {e}")
-            return False
 
     def load_devices_templates(self):
         from utils_ftd import FTD_DEVICES_TEMPLATE

@@ -66,7 +66,7 @@ class Step00_FTDInitialConf:
                     logger.info(f"Connecting to FTD device {data['name']} at {data['hostName']}...")
                     with ConnectHandler(**device) as net_connect:
                         logger.info(f"Connected to {data['name']}. Sending initial configuration commands...")
-                        commands = f'configure manager add {self.fmc_ip} {data["reg_key"]}'
+                        commands = f'configure manager add {self.fmc_ip} {data["regKey"]}'
                         output_1 = net_connect.send_config_set(commands)
                         output_2 = net_connect.send_command('yes', delay_factor=2)
                         output_3 = net_connect.send_command('show managers', delay_factor=2)

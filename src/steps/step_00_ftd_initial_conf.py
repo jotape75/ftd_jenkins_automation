@@ -75,7 +75,7 @@ class Step00_FTDInitialConf:
                         logger.info(f"Sending command: {commands}")
                         
                         # Use send_command_timing to handle interactive prompts
-                        output_1 = net_connect.send_command(
+                        output_1 = net_connect.send_command_timing(
                             commands, 
                             expect_string=r'Do you want to continue\[yes/no\]:',
                             delay_factor=3,
@@ -87,7 +87,7 @@ class Step00_FTDInitialConf:
                         expect_string_01 = 'Do you want to continue[yes/no]:'
                         if expect_string_01 in output_1:
                             logger.info("Confirmation prompt detected, sending 'yes'")
-                            output_2 = net_connect.send_command('yes', delay_factor=3, read_timeout=30)
+                            output_2 = net_connect.send_command_timing('yes', delay_factor=3)
                             logger.info(f"Confirmation response: {output_2}")
                         else:
                             logger.warning(f"Expected confirmation prompt not found for {data['name']}")

@@ -90,7 +90,7 @@ class Step00_FTDInitialConf:
                             output_2 = output_1
                             
                         # Check for registration success and get manager status
-                        expect_string_02 = 'Please make note of reg_key as this will be required while adding Device in FMC:'
+                        expect_string_02 = 'Please make note of reg_key as this will be required while adding Device in FMC.'
                         if expect_string_02 in output_1 or expect_string_02 in output_2:
                             logger.info("Manager registration successful, checking status")
                             try:

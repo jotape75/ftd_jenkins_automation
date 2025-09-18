@@ -75,7 +75,7 @@ class Step00_FTDInitialConf:
                         logger.info(f"Sending command: {commands}")
                         
                         # Use send_command_timing to handle interactive prompts
-                        output_1 = net_connect.send_command_timing(commands, delay_factor=3)
+                        output_1 = net_connect.send_command_timing(commands, delay_factor=3, read_timeout=30)
                         logger.info(f"Command output: {output_1}")
                         
                         # Check for confirmation prompt and respond

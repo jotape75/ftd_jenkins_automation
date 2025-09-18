@@ -75,14 +75,14 @@ class Step00_FTDInitialConf:
                         logger.info(f"Sending command: {commands}")
                         
                         # Use send_command_timing to handle interactive prompts
-                        output_1 = net_connect.send_command_timing(commands, delay_factor=3, read_timeout=30)
+                        output_1 = net_connect.send_commands(commands, delay_factor=3)
                         logger.info(f"Command output: {output_1}")
                         
                         # Check for confirmation prompt and respond
                         expect_string_01 = 'Do you want to continue[yes/no]:'
                         if expect_string_01 in output_1:
                             logger.info("Confirmation prompt detected, sending 'yes'")
-                            output_2 = net_connect.send_command_timing('yes', delay_factor=3)
+                            output_2 = net_connect.send_commands('yes', delay_factor=3)
                             logger.info(f"Confirmation response: {output_2}")
                         else:
                             logger.warning(f"Expected confirmation prompt not found for {data['name']}")
@@ -94,7 +94,7 @@ class Step00_FTDInitialConf:
                         if expect_string_02 in output_1 or expect_string_02 in output_2:
                             logger.info("Manager registration successful, checking status")
                             try:
-                                output_3 = net_connect.send_command_timing('show managers', delay_factor=5, read_timeout=30)
+                                output_3 = net_connect.send_commands('show managers', delay_factor=5, read_timeout=30)
                                 logger.info(f"Manager status on {data['name']}:\n{output_3}")
                             except Exception as show_error:
                                 logger.warning(f"Could not get manager status for {data['name']}: {show_error}")

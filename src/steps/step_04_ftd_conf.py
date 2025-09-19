@@ -1,0 +1,214 @@
+"""
+Step 2: FTD Device Registration with FMC
+
+Registers Cisco FTD devices with Firepower Management Center (FMC) using 
+device templates and credentials provided through Jenkins form parameters. 
+This step handles device registration, policy assignment, and deployment 
+status monitoring.
+
+Key Features:
+- Dynamic device template loading and policy assignment
+- FMC REST API integration for device registration
+- Health status and deployment monitoring with timeout handling
+- Comprehensive error handling and logging
+"""
+
+from wsgiref import headers
+import requests
+import logging
+import pickle
+import json
+import sys
+import os
+import time
+
+# Add the src directory to the Python path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Disable SSL warnings
+requests.packages.urllib3.disable_warnings()
+logger = logging.getLogger()
+
+class Step04_FTD_CONF:
+    """
+    Configure High Availability (HA) settings for FTD devices.
+
+    Uses credentials and device information from Jenkins form parameters.
+    """
+    
+    def __init__(self):
+        """
+        Initialize FTD device registration step.
+        """
+    def execute(self):
+        """
+        Execute FTD device registration with FMC.
+        Uses credentials from Jenkins form parameters.
+        
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            
+            self.load_devices_templates()
+            self.fmc_ip = os.getenv('FMC_IP')
+
+            with open('api_keys_data.pkl', 'rb') as f:
+                rest_api_headers = pickle.load(f)
+                   
+            # FMC API endpoints
+            fmc_ha_settings_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs"
+            fmc_ha_check_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}"
+            fmc_devices = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords"
+            fmc_device_details_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{device_id}}"
+            fmc_dev_int_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{device_id}}/physicalinterfaces"
+
+           
+            ### CREATE SECURITY ZONES ###
+
+            zones_id_list = []
+            for zone in sec_zone_settings["sec_zones_payload"]:
+                response_zones = requests.post(fmc_sec_zones_url, headers=rest_api_headers, data=json.dumps(zone), verify=False)
+                response_zones.raise_for_status()
+                zones = response_zones.json()
+                zones_id = zones.get('id')
+                zones_id_list.append(zones_id)
+
+                if response_zones.status_code in [200, 201]:
+                    logger.info(f"Security zone {zone['name']} created successfully.")
+                else:
+                    logger.info(f"Failed to create security zone {zone['name']}. Status code: {response_zones.status_code}")
+                    logger.info(response_zones.text)
+        #  fmc_seczone_progress.close()
+            time.sleep(5)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error: {e}")
+        
+        ### CONFIGURE INTERFACES ###
+        try:
+        # Get the HA primary device ID
+            def configure_interface(
+                interface_id,
+                interface_name,
+                config,  # dict from your external config, includes zone_index
+                zones_id_list,
+                primary_status_id,
+                primary_name,
+                headers,
+                fmc_interface_progress,
+                fmc_interface_queue
+            ):
+                """
+                Helper to configure a single interface on the FMC device using external config.
+                """
+
+                response_int = requests.get(fmc_url_devcies_int_detail.format(primary_status_id=primary_status_id,interface_id=interface_id), headers=rest_api_headers, verify=False)
+                response_int.raise_for_status()
+                interface_obj = response_int.json()
+                interface_obj.pop("links", None)
+                interface_obj.pop("metadata", None)
+                # Use zone_index from config to select the correct security zone
+                zone_index = config["zone_index"]
+                interface_obj["securityZone"] = {
+                    "id": zones_id_list[zone_index],
+                    "type": "SecurityZone"
+                }
+                interface_obj["ifname"] = config["ifname"]
+                interface_obj["enabled"] = True
+                interface_obj["ipv4"] = {
+                    "static": {
+                        "address": config["ip_address"],
+                        "netmask": config["netmask"]
+                    }
+                }
+                response_put = requests.put(fmc_url_devcies_int_detail.format(primary_status_id=primary_status_id,interface_id=interface_id), headers=rest_api_headers, data=json.dumps(interface_obj), verify=False)
+                response_put.raise_for_status()
+                if response_put.status_code in [200, 201]:
+                    logger.info(f"Security zone assigned to interface {interface_name} on device {primary_name} successfully.")
+                    logger.info(f'IP address assigned to interface {interface_name} on device {primary_name} successfully.')
+                else:
+                    logger.info(f"Failed to assign security zone to interface {interface_name} on device {primary_name}. Status code: {response_put.status_code}")
+                    logger.info(response_put.text)
+
+            response_ha_check = requests.get(fmc_ha_check_url.format(ha_id=ha_id), headers=headers, verify=False)
+            response_ha_check.raise_for_status()
+            ha_json = response_ha_check.json()
+            logger.info(f'Active device is {ha_json["metadata"]["primaryStatus"]["device"]["name"]}')
+            logger.info(response_ha_check.text)
+            primary_status_id = ha_json["metadata"]["primaryStatus"]["device"]["id"]
+            primary_name = ha_json["metadata"]["primaryStatus"]["device"]["name"]
+            url_devices_int = f"https://192.168.0.201/api/fmc_config/v1/domain/default/devices/devicerecords/{primary_status_id}/physicalinterfaces"
+            response_int_check = requests.get(url_devices_int, headers=rest_api_headers, verify=False)
+            response_int_check.raise_for_status()
+            interfaces = response_int_check.json().get('items', [])
+
+            for int_id in interfaces:
+                int_name = int_id['name']
+                if int_name  in fmc_int_settings:
+                    config = fmc_int_settings[int_name]
+                    configure_interface(
+                        interface_id=int_id['id'],
+                        interface_name=int_name,
+                        config=config,
+                        zones_id_list=zones_id_list,
+                        primary_status_id=primary_status_id,
+                        primary_name=primary_name,
+                        headers=headers,
+                        fmc_interface_progress=fmc_interface_progress,
+                        fmc_interface_queue=fmc_interface_queue,
+                    )
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error: {e}")
+            
+        ### CREATE DEFAULT ROUTE ###
+
+        try:
+            host_object = fmc_route_settings["host_object"]
+            static_route_payload = fmc_route_settings["static_route_payload"]
+
+            # Create network object:
+            response_post = requests.post(fmc_obj_host_url, headers=rest_api_headers, data=json.dumps(host_object), verify=False)
+            obj_creation_re = response_post.json()
+            logger.info(response_post.status_code)
+            if response_post.status_code in [200,201]:            
+                gw_host_id = obj_creation_re.get('id')
+                static_route_payload["gateway"]["object"]["id"] = gw_host_id
+                logger.info(f"Host object {host_object['name']} created successfully.")
+                logger.info(f"Host object ID: {gw_host_id}")
+            else:
+                logger.info(f"Failed to create host object {host_object['name']}. Status code: {response_post.status_code}")
+                logger.info(response_post.text)
+
+            # Get any IPv4 object ID
+            response_get = requests.get(fmc_obj_network_url, headers=rest_api_headers, verify=False)
+            response_get.raise_for_status()
+            obj_networks_all = response_get.json().get('items', [])
+
+            for obj in obj_networks_all:
+                if obj['name'] == 'any-ipv4':
+                    any_ipv4_id = obj['id']
+
+            static_route_payload["selectedNetworks"][0]["id"] = any_ipv4_id
+            # Create route
+            response_route = requests.post(fmc_routing_url.format(primary_status_id=primary_status_id), headers=rest_api_headers, data=json.dumps(static_route_payload), verify=False)
+            response_route.raise_for_status()
+
+            if response_route.status_code in [200, 201]:
+                route_response = response_route.json()
+                logger.info(f"Static route '{static_route_payload['name']}' created successfully.")
+                logger.info(f"Route ID: {route_response.get('id')}")
+            else:
+                logger.info(f"Failed to create static route. Status code: {response_route.status_code}")
+                logger.info(response_route.text)
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error: {e}")
+
+    def load_devices_templates(self):
+        from utils_ftd import FTD_HA_TEMPLATE, FTD_DEVICES_TEMPLATE
+
+        with open(FTD_HA_TEMPLATE, 'r') as f0, open(FTD_DEVICES_TEMPLATE, 'r') as f1:
+            self.ftd_ha_tmp = json.load(f0)
+            logger.info("Loaded FTD HA template")
+            self.ftd_devices_tmp = json.load(f1)
+            logger.info("Loaded FTD devices template")

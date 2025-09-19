@@ -58,7 +58,7 @@ class Step03_HAConfig:
             with open('api_keys_data.pkl', 'rb') as f:
                 rest_api_headers = pickle.load(f)
                    
-            # Get credentials from Jenkins form parameters
+            # FMC API endpoints
             fmc_ha_settings_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs"
             fmc_ha_check_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}"
             fmc_devices = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords"

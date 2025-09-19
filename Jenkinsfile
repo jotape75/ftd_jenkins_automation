@@ -59,7 +59,7 @@ pipeline {
                     
                     // Set environment variables with CORRECT parameter names
                     env.FMC_IP = params.FMC_IP
-                     env.FMC_USERNAME = params.FMC_USERNAME
+                    env.FMC_USERNAME = params.FMC_USERNAME
                     env.FMC_PASSWORD = params.FMC_PASSWORD
                     env.FW_HOSTNAME_01 = params.FW_HOSTNAME_01
                     env.FW_HOSTNAME_02 = params.FW_HOSTNAME_02
@@ -130,8 +130,9 @@ pipeline {
             }
         }
         // success {
-        //     echo "PA Automation completed successfully!"
-        //     echo "HA Configuration: ${params.HA1_INTERFACE} (Control), ${params.HA2_INTERFACE} (Data)"
+        //     echo "FTD Automation completed successfully!"
+        //     echo "Devices ${params.FW_HOSTNAME_01}, ${params.FW_HOSTNAME_02} added to FMC IP: ${params.FMC_IP}"
+        //     echo "HA Established on interface: ${params.HA_INTERFACE}"
         //     echo "Configuration committed and synced to both firewalls"
         // }
         // failure {

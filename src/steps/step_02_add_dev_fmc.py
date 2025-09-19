@@ -59,7 +59,7 @@ class Step02_ADD_DEV_FMC:
             with open('api_keys_data.pkl', 'rb') as f:
                 rest_api_headers = pickle.load(f)
                    
-            # Get credentials from Jenkins form parameters
+            # FMC API endpoints
             fmc_access_policy_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/accesspolicies"
             fmc_devices = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords"
             fmc_device_details_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{device_id}}"

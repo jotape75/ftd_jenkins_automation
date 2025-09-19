@@ -31,34 +31,7 @@ class TemplateUpdater:
     
     def __init__(self):
         self.data_dir = "data/payload"
-        self.jenkins_params = self._get_jenkins_params()
-    
-    def _get_jenkins_params(self):
-        """Get Jenkins parameters from environment variables"""
-        return {
-            # FTD Devices
-            # 'cisco_ftd_01': os.getenv('IP_ADD_FW_01', '192.168.0.202'),
-            # 'cisco_ftd_02': os.getenv('IP_ADD_FW_02', '192.168.0.203'),
-
-            # # Data Interface IPs
-            # 'ethernet1_1_ip_trust': os.getenv('ETHERNET1_1_IP_TRUST', '10.10.10.5/24'),
-            # 'ethernet1_2_ip_untrust': os.getenv('ETHERNET1_2_IP_UNTRUST', '200.200.200.2/24'),
-            # 'ethernet1_3_ip_dmz': os.getenv('ETHERNET1_3_IP_DMZ', '10.30.30.5/24'),
-            
-            # # Gateway/Routing
-            # 'default_gateway': os.getenv('DEFAULT_GATEWAY', '200.200.200.1'),
-            # 'static_route_network': os.getenv('STATIC_ROUTE_NETWORK', '10.0.0.0/8'),
-            # 'static_route_nexthop': os.getenv('STATIC_ROUTE_NEXTHOP', '10.10.10.1'),
-            
-            # # NAT
-            # 'source_nat_ip': os.getenv('SOURCE_NAT_IP', '200.200.200.10'),
-            
-            # # Security Zones 
-            # 'trust': os.getenv('TRUST', 'ethernet1/1'),
-            # 'untrust': os.getenv('UNTRUST', 'ethernet1/2'),
-            # 'dmz': os.getenv('DMZ', 'ethernet1/3')
-        }
-    
+        
     def update_devices_template(self):
         """Update fmc_devices template with Jenkins parameters"""
         template_file = f"{self.data_dir}/fmc_devices.json"

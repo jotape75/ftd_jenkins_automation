@@ -4,7 +4,7 @@
             "type": "Device",
             "name": "{FW_HOSTNAME_01}",
             "hostName": "{IP_ADD_FW_01}",
-            "regKey": "cisco123",
+            "regKey": "{REGKEY}",
             "accessPolicy": {
                 "type": "AccessPolicy"
             }
@@ -13,7 +13,7 @@
             "type": "Device", 
             "name": "{FW_HOSTNAME_02}",
             "hostName": "{IP_ADD_FW_02}",
-            "regKey": "cisco123",
+            "regKey": "{REGKEY}",
             "accessPolicy": {
                 "type": "AccessPolicy"
             }

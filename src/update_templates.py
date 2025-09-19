@@ -83,7 +83,7 @@ class TemplateUpdater:
         """Execute all template updates"""
         try:
             logger.info("Starting template updates with Jenkins parameters...")
-            logger.info(f"Parameters: {self.jenkins_params}")
+
             
             # Create data directory if it doesn't exist
             os.makedirs(self.data_dir, exist_ok=True)

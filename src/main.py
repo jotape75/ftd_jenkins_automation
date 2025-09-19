@@ -67,28 +67,21 @@ def main():
         logger.info(f"Starting FTD Automation - Log file: {LOG_FILE}")
         logger.info(f"Executing step: {args.step}")
         
-        if args.step == 'ftd_initial_conf':
-            from steps.step_00_ftd_initial_conf import Step00_FTDInitialConf
-            step = Step00_FTDInitialConf()
+    
+        if args.step == 'api_keys':
+            from steps.step_01_api_keys import Step01_APIKeys
+            step = Step01_APIKeys()
             success = step.execute()
-        # elif args.step == 'api_keys':
-        #     from steps.step_01_api_keys import Step01_APIKeys
-        #     step = Step01_APIKeys()
-        #     success = step.execute()
             
-        # elif args.step == 'add_dev_fmc':
-        #     from steps.step_02_add_dev_fmc import Step02_ADD_DEV_FMC
-        #     step = Step02_ADD_DEV_FMC()
-        #     success = step.execute()
+        elif args.step == 'add_dev_fmc':
+            from steps.step_02_add_dev_fmc import Step02_ADD_DEV_FMC
+            step = Step02_ADD_DEV_FMC()
+            success = step.execute()
             
-        # elif args.step == 'conf_ha':
-        #     from steps.step_03_conf_ha import Step03_HAConfig
-        #     step = Step03_HAConfig()
-        #     success = step.execute()
-        # elif args.step == 'identify_active':
-        #     from steps.step_04_identify_active import Step04_IdentifyActive
-        #     step = Step04_IdentifyActive()
-        #     success = step.execute()
+        elif args.step == 'conf_ha':
+            from steps.step_03_conf_ha import Step03_HAConfig
+            step = Step03_HAConfig()
+            success = step.execute()
         # elif args.step == 'firewall_config':
         #     from steps.step_05_firewall_config import Step05_FirewallConfig
         #     step = Step05_FirewallConfig()

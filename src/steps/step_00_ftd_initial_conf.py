@@ -94,17 +94,21 @@ class Step00_FTDInitialConf:
                             output_2 = output_1
                             
                         # Check for registration success and get manager status
-                        expect_string_02 = 'Please make note of reg_key as this will be required while adding Device in FMC.'
-                        if expect_string_02 in output_1 or expect_string_02 in output_2:
-                            logger.info("Manager registration successful, checking status")
-                            try:
-                                output_3 = net_connect.send_command('show managers', delay_factor=5, read_timeout=30)
-                                logger.info(f"Manager status on {data['name']}:\n{output_3}")
-                            except Exception as show_error:
-                                logger.warning(f"Could not get manager status for {data['name']}: {show_error}")
-                        else:
-                            logger.warning("Manager registration confirmation not found")
-                            logger.info(f"Registration output: {output_2}")
+                        success_messages = [
+                            'Please make note of reg_key as this will be required while adding Device in FMC',
+                            'Local Manager successfully deleted'
+                        ]
+                        for msg in success_messages:
+                            if msg in output_1 or msg in output_2:
+                                logger.info("Manager registration successful, checking status")
+                                try:
+                                    output_3 = net_connect.send_command('show managers', delay_factor=5, read_timeout=30)
+                                    logger.info(f"Manager status on {data['name']}:\n{output_3}")
+                                except Exception as show_error:
+                                    logger.warning(f"Could not get manager status for {data['name']}: {show_error}")
+                            else:
+                                logger.warning("Manager registration confirmation not found")
+                                logger.info(f"Registration output: {output_2}")
                             
                 except (NetmikoTimeoutException, NetmikoAuthenticationException) as e:
                     logger.error(f"Connection error for device {data['name']} at {data['hostName']}: {e}")

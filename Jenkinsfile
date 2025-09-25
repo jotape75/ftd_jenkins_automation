@@ -40,10 +40,6 @@ pipeline {
         string(name: 'IP_ADD_FW_02', defaultValue: '192.168.0.203', description: 'Cisco FTD 02 IP Address')
         password(name: 'REGKEY', description: 'Key for FMC Registration')
 
-        // SSH credentials for FTD initial configuration
-        string(name: 'SSH_ADMIN_USERNAME', defaultValue: 'admin', description: 'FTD SSH Username')
-        password(name: 'SSH_ADMIN_PASSWORD', description: 'FTD SSH Password')
-
         // HA and Network parameters
         choice(name: 'HA_INTERFACE', choices: ['GigabitEthernet0/3', 'GigabitEthernet0/4', 'GigabitEthernet0/5'], description: 'HA Interface')
         

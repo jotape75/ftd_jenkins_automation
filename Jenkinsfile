@@ -150,30 +150,23 @@ pipeline {
                 }
             }
         }
-
-        stage('FTD Initial Configuration') {
-            steps {
-                sh 'python3 src/main.py --step ftd_initial_conf'
-            }
-        }
-
         stage('Generate FMC API Key') {
             steps {
                 sh 'python3 src/main.py --step api_keys'
             }
         }
         
-        stage('Add devices to FMC') {
-            steps {
-                sh 'python3 src/main.py --step add_dev_fmc'
-            }
-        }
+        // stage('Add devices to FMC') {
+        //     steps {
+        //         sh 'python3 src/main.py --step add_dev_fmc'
+        //     }
+        // }
         
-        stage('Configure HA Settings') {
-            steps {
-                sh 'python3 src/main.py --step conf_ha'
-            }
-        }
+        // stage('Configure HA Settings') {
+        //     steps {
+        //         sh 'python3 src/main.py --step conf_ha'
+        //     }
+        // }
         stage('Configure FTD') {
             steps {
                 sh 'python3 src/main.py --step ftd_conf'

@@ -108,6 +108,7 @@ class TemplateUpdater:
 
     def default_route_template(self):
         """Update default route template with Jenkins parameters"""
+        GW_OUTSIDE = f'{os.getenv("FW_HOSTNAME_01", "")}_HA_outside_gw'
         template_file = f"{self.data_dir}/default_route.json"
 
         with open(template_file, 'r') as f:
@@ -115,7 +116,8 @@ class TemplateUpdater:
 
         # Replace placeholders with Jenkins environment variables
         content = content.replace('{DEFAULT_ROUTE_GATEWAY}', os.getenv('DEFAULT_ROUTE_GATEWAY', ''))
-        content = content.replace('{OUTSIDE_INTERFACE_NAME}', os.getenv('OUTSIDE-INTERFACE_NAME', ''))
+        content = content.replace('{OUTSIDE_INTERFACE_NAME}', os.getenv('OUTSIDE_INTERFACE_NAME', ''))
+        content = content.replace('{GW_OUTSIDE}', GW_OUTSIDE)
 
         with open(template_file, 'w') as f:
             f.write(content)

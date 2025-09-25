@@ -1,6 +1,6 @@
 {
     "host_object" : {
-        "name": "outside_gw",
+        "name": "{GW_OUTSIDE}",
         "value": "{DEFAULT_ROUTE_GATEWAY}",
         "type": "host"
         },

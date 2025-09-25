@@ -36,6 +36,6 @@ PAYLOAD_DIR = DATA_DIR / "payload" # navigate to payload directory
 FTD_DEVICES_TEMPLATE = f"{get_project_root()}/data/payload/fmc_devices.json"
 FTD_HA_TEMPLATE = f"{get_project_root()}/data/payload/fmc_ha_payload.json"
 FTD_SEC_ZONES_TEMPLATE = f"{get_project_root()}/data/payload/sec_zones.json"
-FTD_INT_TEMPLATE = f"{get_project_root()}/data/payload/ftd_interfaces.json"
+FTD_INT_TEMPLATE = f"{get_project_root()}/data/payload/ftd_interface.json"
 FTD_STATIC_ROUTE_TEMPLATE = f"{get_project_root()}/data/payload/default_route.json"
 

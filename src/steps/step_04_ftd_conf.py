@@ -1,19 +1,18 @@
 """
-Step 2: FTD Device Registration with FMC
+Step 4: FTD Zone, Interface and Route Configuration
 
-Registers Cisco FTD devices with Firepower Management Center (FMC) using 
-device templates and credentials provided through Jenkins form parameters. 
-This step handles device registration, policy assignment, and deployment 
-status monitoring.
+Configures Cisco FTD devices with security zones, interface settings, and static routes
+through FMC REST API. This step handles the complete network configuration including
+security zone creation, interface IP assignment, zone assignment, and default route creation.
 
 Key Features:
-- Dynamic device template loading and policy assignment
-- FMC REST API integration for device registration
-- Health status and deployment monitoring with timeout handling
+- Security zone creation and management
+- Physical interface configuration with IP addresses and security zone assignment
+- Static route creation with gateway host objects
+- HA-aware configuration targeting the primary device
 - Comprehensive error handling and logging
 """
 
-from wsgiref import headers
 import requests
 import logging
 import pickle
@@ -31,18 +30,19 @@ logger = logging.getLogger()
 
 class Step04_FTD_CONF:
     """
-    Configure High Availability (HA) settings for FTD devices.
+    Configure FTD security zones, interfaces, and routing.
 
     Uses credentials and device information from Jenkins form parameters.
     """
     
     def __init__(self):
         """
-        Initialize FTD device registration step.
+        Initialize FTD configuration step.
         """
+        
     def execute(self):
         """
-        Execute FTD device registration with FMC.
+        Execute FTD zone, interface and route configuration.
         Uses credentials from Jenkins form parameters.
         
         Returns:
@@ -57,17 +57,19 @@ class Step04_FTD_CONF:
                 rest_api_headers = pickle.load(f)
                    
             # FMC API endpoints
+            fmc_sec_zones_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/securityzones"
+            fmc_url_devices_int_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{primary_status_id}}/physicalinterfaces/{{interface_id}}"
             fmc_ha_settings_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs"
             fmc_ha_check_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}"
-            fmc_devices = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords"
-            fmc_device_details_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{device_id}}"
-            fmc_dev_int_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{device_id}}/physicalinterfaces"
-
+            url_devices_int = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{primary_status_id}}/physicalinterfaces"
+            fmc_obj_host_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/hosts"
+            fmc_obj_network_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/networks"
+            fmc_routing_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{primary_status_id}}/routing/ipv4staticroutes"
            
             ### CREATE SECURITY ZONES ###
 
             zones_id_list = []
-            for zone in sec_zone_settings["sec_zones_payload"]:
+            for zone in self.ftd_sec_zones_tmp["sec_zones_payload"]:
                 response_zones = requests.post(fmc_sec_zones_url, headers=rest_api_headers, data=json.dumps(zone), verify=False)
                 response_zones.raise_for_status()
                 zones = response_zones.json()
@@ -79,10 +81,11 @@ class Step04_FTD_CONF:
                 else:
                     logger.info(f"Failed to create security zone {zone['name']}. Status code: {response_zones.status_code}")
                     logger.info(response_zones.text)
-        #  fmc_seczone_progress.close()
+                    return False
             time.sleep(5)
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
+            return False
         
         ### CONFIGURE INTERFACES ###
         try:
@@ -94,15 +97,13 @@ class Step04_FTD_CONF:
                 zones_id_list,
                 primary_status_id,
                 primary_name,
-                headers,
-                fmc_interface_progress,
-                fmc_interface_queue
+                headers
             ):
                 """
                 Helper to configure a single interface on the FMC device using external config.
                 """
 
-                response_int = requests.get(fmc_url_devcies_int_detail.format(primary_status_id=primary_status_id,interface_id=interface_id), headers=rest_api_headers, verify=False)
+                response_int = requests.get(fmc_url_devices_int_detail.format(primary_status_id=primary_status_id,interface_id=interface_id), headers=headers, verify=False)
                 response_int.raise_for_status()
                 interface_obj = response_int.json()
                 interface_obj.pop("links", None)
@@ -121,7 +122,7 @@ class Step04_FTD_CONF:
                         "netmask": config["netmask"]
                     }
                 }
-                response_put = requests.put(fmc_url_devcies_int_detail.format(primary_status_id=primary_status_id,interface_id=interface_id), headers=rest_api_headers, data=json.dumps(interface_obj), verify=False)
+                response_put = requests.put(fmc_url_devices_int_detail.format(primary_status_id=primary_status_id,interface_id=interface_id), headers=rest_api_headers, data=json.dumps(interface_obj), verify=False)
                 response_put.raise_for_status()
                 if response_put.status_code in [200, 201]:
                     logger.info(f"Security zone assigned to interface {interface_name} on device {primary_name} successfully.")
@@ -129,23 +130,31 @@ class Step04_FTD_CONF:
                 else:
                     logger.info(f"Failed to assign security zone to interface {interface_name} on device {primary_name}. Status code: {response_put.status_code}")
                     logger.info(response_put.text)
-
-            response_ha_check = requests.get(fmc_ha_check_url.format(ha_id=ha_id), headers=headers, verify=False)
+                    
+            #GET HA ID
+            response_ha_id = requests.get(fmc_ha_settings_url, headers=rest_api_headers, verify=False)
+            response_ha_id.raise_for_status()
+            ha_output = response_ha_id.json().get('items', [])
+            #ha_id = ""
+            for ha in ha_output:
+                if ha.get('name') == self.ftd_ha_tmp['ha_payload']['name']:
+                    ha_id = ha.get("id")
+                    break
+            response_ha_check = requests.get(fmc_ha_check_url.format(ha_id=ha_id), headers=rest_api_headers, verify=False)
             response_ha_check.raise_for_status()
             ha_json = response_ha_check.json()
             logger.info(f'Active device is {ha_json["metadata"]["primaryStatus"]["device"]["name"]}')
             logger.info(response_ha_check.text)
             primary_status_id = ha_json["metadata"]["primaryStatus"]["device"]["id"]
             primary_name = ha_json["metadata"]["primaryStatus"]["device"]["name"]
-            url_devices_int = f"https://192.168.0.201/api/fmc_config/v1/domain/default/devices/devicerecords/{primary_status_id}/physicalinterfaces"
-            response_int_check = requests.get(url_devices_int, headers=rest_api_headers, verify=False)
+            response_int_check = requests.get(url_devices_int.format(primary_status_id=primary_status_id), headers=rest_api_headers, verify=False)
             response_int_check.raise_for_status()
             interfaces = response_int_check.json().get('items', [])
 
             for int_id in interfaces:
                 int_name = int_id['name']
-                if int_name  in fmc_int_settings:
-                    config = fmc_int_settings[int_name]
+                if int_name  in self.fmc_int_settings:
+                    config = self.fmc_int_settings[int_name]
                     configure_interface(
                         interface_id=int_id['id'],
                         interface_name=int_name,
@@ -153,24 +162,23 @@ class Step04_FTD_CONF:
                         zones_id_list=zones_id_list,
                         primary_status_id=primary_status_id,
                         primary_name=primary_name,
-                        headers=headers,
-                        fmc_interface_progress=fmc_interface_progress,
-                        fmc_interface_queue=fmc_interface_queue,
+                        headers=rest_api_headers
                     )
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
+            return False
             
         ### CREATE DEFAULT ROUTE ###
 
         try:
-            host_object = fmc_route_settings["host_object"]
-            static_route_payload = fmc_route_settings["static_route_payload"]
+            host_object = self.fmc_route_settings["host_object"]
+            static_route_payload = self.fmc_route_settings["static_route_payload"]
 
             # Create network object:
             response_post = requests.post(fmc_obj_host_url, headers=rest_api_headers, data=json.dumps(host_object), verify=False)
             obj_creation_re = response_post.json()
             logger.info(response_post.status_code)
-            if response_post.status_code in [200,201]:            
+            if response_post.status_code in [200,201]:
                 gw_host_id = obj_creation_re.get('id')
                 static_route_payload["gateway"]["object"]["id"] = gw_host_id
                 logger.info(f"Host object {host_object['name']} created successfully.")
@@ -178,6 +186,7 @@ class Step04_FTD_CONF:
             else:
                 logger.info(f"Failed to create host object {host_object['name']}. Status code: {response_post.status_code}")
                 logger.info(response_post.text)
+                return False
 
             # Get any IPv4 object ID
             response_get = requests.get(fmc_obj_network_url, headers=rest_api_headers, verify=False)
@@ -200,15 +209,27 @@ class Step04_FTD_CONF:
             else:
                 logger.info(f"Failed to create static route. Status code: {response_route.status_code}")
                 logger.info(response_route.text)
+                return False
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
+            return False
+
+        return True
 
     def load_devices_templates(self):
-        from utils_ftd import FTD_HA_TEMPLATE, FTD_DEVICES_TEMPLATE
+        from utils_ftd import FTD_HA_TEMPLATE,FTD_SEC_ZONES_TEMPLATE,FTD_INT_TEMPLATE,FTD_STATIC_ROUTE_TEMPLATE
 
-        with open(FTD_HA_TEMPLATE, 'r') as f0, open(FTD_DEVICES_TEMPLATE, 'r') as f1:
+        with open(FTD_HA_TEMPLATE, 'r') as f0, \
+            open(FTD_SEC_ZONES_TEMPLATE, 'r') as f1, \
+            open(FTD_INT_TEMPLATE, 'r') as f2, \
+            open(FTD_STATIC_ROUTE_TEMPLATE, 'r') as f3:
+            
             self.ftd_ha_tmp = json.load(f0)
             logger.info("Loaded FTD HA template")
-            self.ftd_devices_tmp = json.load(f1)
-            logger.info("Loaded FTD devices template")
+            self.ftd_sec_zones_tmp = json.load(f1)
+            logger.info("Loaded FTD security zones template")
+            self.fmc_int_settings = json.load(f2)
+            logger.info("Loaded FTD interfaces configuration template")
+            self.fmc_route_settings = json.load(f3)
+            logger.info("Loaded FTD static route configuration template")

@@ -1,0 +1,20 @@
+{
+    "{OUTSIDE_INTERFACE}": {
+      "ifname": "{OUTSIDE_INTERFACE_NAME}",
+      "ip_address": "{OUTSIDE_IP}",
+      "netmask": "{OUTSIDE_MASK}",
+      "zone_index": 0
+    },
+    "{INSIDE_INTERFACE}": {
+      "ifname": "{INSIDE_INTERFACE_NAME}",
+      "ip_address": "{INSIDE_IP}",
+      "netmask": "{INSIDE_MASK}",
+      "zone_index": 1
+    },
+    "{DMZ_INTERFACE}": {
+      "ifname": "{DMZ_INTERFACE_NAME}",
+      "ip_address": "{DMZ_IP}",
+      "netmask": "{DMZ_MASK}",
+      "zone_index": 2
+    }
+  }

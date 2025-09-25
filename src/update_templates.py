@@ -67,18 +67,61 @@ class TemplateUpdater:
             f.write(content)
 
         logger.info("Updated ftd_ha_payload with Jenkins parameters")
-
-    # def update_ha_interface_template(self):
-    #     """
-    #     HA interface template should NOT be updated here - 
-    #     it needs dynamic IPs per device in step_03_ha_config.py
-    #     """
-    #     logger.info("HA interface template kept with placeholders for dynamic updates")
-    #     # Don't update this template - leave {ha1_ip} as placeholder
-    #     return
     
+    def update_sec_zones_template(self):
+        """Update security zones template with Jenkins parameters"""
+        template_file = f"{self.data_dir}/sec_zones.json"
 
-    
+        with open(template_file, 'r') as f:
+            content = f.read()
+
+        # Replace placeholders with Jenkins environment variables
+        content = content.replace('{OUTSIDE_SEC_ZONE}', os.getenv('OUTSIDE_SEC_ZONE', ''))
+        content = content.replace('{INSIDE_SEC_ZONE}', os.getenv('INSIDE_SEC_ZONE', ''))
+        content = content.replace('{DMZ_SEC_ZONE}', os.getenv('DMZ_SEC_ZONE', ''))
+
+        with open(template_file, 'w') as f:
+            f.write(content)
+
+        logger.info("Updated security zones template with Jenkins parameters")      
+
+    def update_interfaces_template(self):
+        """Update interfaces template with Jenkins parameters"""
+        template_file = f"{self.data_dir}/interfaces.json"
+
+        with open(template_file, 'r') as f:
+            content = f.read()
+
+        # Replace placeholders with Jenkins environment variables
+        content = content.replace('{INSIDE_INTERFACE}', os.getenv('INSIDE_INTERFACE', ''))
+        content = content.replace('{INSIDE_INTERFACE_NAME}', os.getenv('INSIDE-INTERFACE_NAME', ''))
+        content = content.replace('{OUTSIDE_INTERFACE}', os.getenv('OUTSIDE_INTERFACE', ''))
+        content = content.replace('{OUTSIDE_INTERFACE_NAME}', os.getenv('OUTSIDE-INTERFACE_NAME', ''))
+        content = content.replace('{DMZ_INTERFACE}', os.getenv('DMZ_INTERFACE', ''))
+        content = content.replace('{DMZ_INTERFACE_NAME}', os.getenv('DMZ-INTERFACE_NAME', ''))
+        content = content.replace('{INSIDE_IP}', os.getenv('INSIDE_IP', ''))
+        content = content.replace('{INSIDE_MASK}', os.getenv('INSIDE_MASK', ''))
+        content = content.replace('{OUTSIDE_IP}', os.getenv('OUTSIDE_IP', ''))
+        content = content.replace('{OUTSIDE_MASK}', os.getenv('OUTSIDE_MASK', ''))
+        content = content.replace('{DMZ_IP}', os.getenv('DMZ_IP', ''))
+        content = content.replace('{DMZ_MASK}', os.getenv('DMZ_MASK', ''))
+
+    def default_route_template(self):
+        """Update default route template with Jenkins parameters"""
+        template_file = f"{self.data_dir}/default_route.json"
+
+        with open(template_file, 'r') as f:
+            content = f.read()
+
+        # Replace placeholders with Jenkins environment variables
+        content = content.replace('{DEFAULT_ROUTE_GATEWAY}', os.getenv('DEFAULT_ROUTE_GATEWAY', ''))
+        content = content.replace('{OUTSIDE_INTERFACE_NAME}', os.getenv('OUTSIDE-INTERFACE_NAME', ''))
+
+        with open(template_file, 'w') as f:
+            f.write(content)
+
+        logger.info("Updated default route template with Jenkins parameters")
+
     def execute(self):
         """Execute all template updates"""
         try:
@@ -91,9 +134,9 @@ class TemplateUpdater:
             # Update all templates
             self.update_devices_template()
             self.update_ftd_ha_payload() 
-            # self.update_routing_template()
-            # self.update_nat_template()
-            # self.update_zones_template()
+            self.update_sec_zones_template()
+            self.update_interfaces_template()
+            self.default_route_template()
             
             logger.info("All templates updated successfully!")
             return True

@@ -73,19 +73,19 @@ def main():
             step = Step01_APIKeys()
             success = step.execute()
             
-        elif args.step == 'add_dev_fmc':
-            from steps.step_02_add_dev_fmc import Step02_ADD_DEV_FMC
-            step = Step02_ADD_DEV_FMC()
-            success = step.execute()
-            
-        elif args.step == 'conf_ha':
-            from steps.step_03_conf_ha import Step03_HAConfig
-            step = Step03_HAConfig()
-            success = step.execute()
-        # elif args.step == 'firewall_config':
-        #     from steps.step_05_firewall_config import Step05_FirewallConfig
-        #     step = Step05_FirewallConfig()
+        # elif args.step == 'add_dev_fmc':
+        #     from steps.step_02_add_dev_fmc import Step02_ADD_DEV_FMC
+        #     step = Step02_ADD_DEV_FMC()
         #     success = step.execute()
+            
+        # elif args.step == 'conf_ha':
+        #     from steps.step_03_conf_ha import Step03_HAConfig
+        #     step = Step03_HAConfig()
+            # success = step.execute()
+        elif args.step == 'ftd_conf':
+            from steps.step_04_ftd_conf import Step04_FTD_CONF
+            step = Step04_FTD_CONF()
+            success = step.execute()
         # elif args.step == 'commit':
         #     from steps.step_06_commit import Step06_CommitSync
         #     step = Step06_CommitSync()

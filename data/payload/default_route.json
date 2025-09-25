@@ -1,0 +1,26 @@
+{
+    "host_object" : {
+        "name": "outside_gw",
+        "value": "{DEFAULT_ROUTE_GATEWAY}",
+        "type": "host"
+        },
+    "static_route_payload" : {
+        "type": "IPv4StaticRoute",
+        "name": "default_route",
+        "interfaceName": "{OUTSIDE_INTERFACE_NAME}",  
+        "selectedNetworks": [
+            {
+                "id": "",
+                "type": "Network"
+            }
+        ],
+        "gateway": {
+            "object": {
+                "id": "",
+                "type": "Host"
+            }
+        },
+        "metricValue": 1,
+        "isTunneled": false
+    }
+}

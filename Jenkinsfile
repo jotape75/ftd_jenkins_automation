@@ -45,34 +45,34 @@ pipeline {
         
         // Combined interface configurations  
         choice(name: 'INSIDE_CONFIG', 
-               choices: ['GigabitEthernet0/0 | INSIDE | INSIDE-SEC_ZONE',
-                         'GigabitEthernet0/1 | INSIDE | INSIDE-SEC_ZONE',
-                         'GigabitEthernet0/2 | INSIDE | INSIDE-SEC_ZONE'], 
+               choices: ['GigabitEthernet0/0 | INSIDE | INSIDE_SEC_ZONE',
+                         'GigabitEthernet0/1 | INSIDE | INSIDE_SEC_ZONE',
+                         'GigabitEthernet0/2 | INSIDE | INSIDE_SEC_ZONE'], 
                description: 'Inside: Interface | Name | Security Zone')
         
         string(name: 'INSIDE_IP', defaultValue: '192.168.1.1', description: 'Inside Interface IP Address')
         string(name: 'INSIDE_MASK', defaultValue: '255.255.255.0', description: 'Inside Interface Subnet Mask')
         
         choice(name: 'OUTSIDE_CONFIG',
-               choices: ['GigabitEthernet0/0 | OUTSIDE | OUTSIDE-SEC_ZONE',
-                         'GigabitEthernet0/1 | OUTSIDE | OUTSIDE-SEC_ZONE', 
-                         'GigabitEthernet0/2 | OUTSIDE | OUTSIDE-SEC_ZONE'],
+               choices: ['GigabitEthernet0/0 | OUTSIDE | OUTSIDE_SEC_ZONE',
+                         'GigabitEthernet0/1 | OUTSIDE | OUTSIDE_SEC_ZONE', 
+                         'GigabitEthernet0/2 | OUTSIDE | OUTSIDE_SEC_ZONE'],
                description: 'Outside: Interface | Name | Security Zone')
         
         string(name: 'OUTSIDE_IP', defaultValue: '10.0.0.1', description: 'Outside Interface IP Address')
         string(name: 'OUTSIDE_MASK', defaultValue: '255.255.255.0', description: 'Outside Interface Subnet Mask')
         
         choice(name: 'DMZ_CONFIG',
-               choices: ['GigabitEthernet0/0 | DMZ | DMZ-SEC_ZONE',
-                         'GigabitEthernet0/1 | DMZ | DMZ-SEC_ZONE',
-                         'GigabitEthernet0/2 | DMZ | DMZ-SEC_ZONE'],
+               choices: ['GigabitEthernet0/0 | DMZ | DMZ_SEC_ZONE',
+                         'GigabitEthernet0/1 | DMZ | DMZ_SEC_ZONE',
+                         'GigabitEthernet0/2 | DMZ | DMZ_SEC_ZONE'],
                description: 'DMZ: Interface | Name | Security Zone')
         
         string(name: 'DMZ_IP', defaultValue: '172.16.1.1', description: 'DMZ Interface IP Address')
         string(name: 'DMZ_MASK', defaultValue: '255.255.255.0', description: 'DMZ Interface Subnet Mask')
 
         // Default route
-        string(name: 'DEFAULT_ROUTE_GATEWAY', defaultValue: '10.10.10.1/0', description: 'Default Route Gateway')
+        string(name: 'DEFAULT_ROUTE_GATEWAY', defaultValue: '10.10.10.1', description: 'Default Route Gateway')
     }
     
     stages {

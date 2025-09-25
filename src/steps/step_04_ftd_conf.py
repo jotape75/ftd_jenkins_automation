@@ -135,7 +135,7 @@ class Step04_FTD_CONF:
             response_ha_id = requests.get(fmc_ha_settings_url, headers=rest_api_headers, verify=False)
             response_ha_id.raise_for_status()
             ha_output = response_ha_id.json().get('items', [])
-            #ha_id = ""
+            ha_id = ""
             for ha in ha_output:
                 if ha.get('name') == self.ftd_ha_tmp['ha_payload']['name']:
                     ha_id = ha.get("id")

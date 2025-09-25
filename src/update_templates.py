@@ -87,7 +87,7 @@ class TemplateUpdater:
 
     def update_interfaces_template(self):
         """Update interfaces template with Jenkins parameters"""
-        template_file = f"{self.data_dir}/interfaces.json"
+        template_file = f"{self.data_dir}/interface.json"
 
         with open(template_file, 'r') as f:
             content = f.read()

@@ -103,8 +103,6 @@ pipeline {
                     env.IP_ADD_FW_01 = params.IP_ADD_FW_01
                     env.IP_ADD_FW_02 = params.IP_ADD_FW_02
                     env.REGKEY = params.REGKEY
-                    env.SSH_ADMIN_USERNAME = params.SSH_ADMIN_USERNAME
-                    env.SSH_ADMIN_PASSWORD = params.SSH_ADMIN_PASSWORD
                     env.HA_INTERFACE = params.HA_INTERFACE
                     
                     // Parse combined interface configurations

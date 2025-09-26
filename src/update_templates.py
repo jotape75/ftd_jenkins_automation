@@ -94,17 +94,22 @@ class TemplateUpdater:
 
         # Replace placeholders with Jenkins environment variables
         content = content.replace('{INSIDE_INTERFACE}', os.getenv('INSIDE_INTERFACE', ''))
-        content = content.replace('{INSIDE_INTERFACE_NAME}', os.getenv('INSIDE-INTERFACE_NAME', ''))
+        content = content.replace('{INSIDE_INTERFACE_NAME}', os.getenv('INSIDE_INTERFACE_NAME', ''))
         content = content.replace('{OUTSIDE_INTERFACE}', os.getenv('OUTSIDE_INTERFACE', ''))
-        content = content.replace('{OUTSIDE_INTERFACE_NAME}', os.getenv('OUTSIDE-INTERFACE_NAME', ''))
+        content = content.replace('{OUTSIDE_INTERFACE_NAME}', os.getenv('OUTSIDE_INTERFACE_NAME', ''))
         content = content.replace('{DMZ_INTERFACE}', os.getenv('DMZ_INTERFACE', ''))
-        content = content.replace('{DMZ_INTERFACE_NAME}', os.getenv('DMZ-INTERFACE_NAME', ''))
+        content = content.replace('{DMZ_INTERFACE_NAME}', os.getenv('DMZ_INTERFACE_NAME', ''))
         content = content.replace('{INSIDE_IP}', os.getenv('INSIDE_IP', ''))
         content = content.replace('{INSIDE_MASK}', os.getenv('INSIDE_MASK', ''))
         content = content.replace('{OUTSIDE_IP}', os.getenv('OUTSIDE_IP', ''))
         content = content.replace('{OUTSIDE_MASK}', os.getenv('OUTSIDE_MASK', ''))
         content = content.replace('{DMZ_IP}', os.getenv('DMZ_IP', ''))
         content = content.replace('{DMZ_MASK}', os.getenv('DMZ_MASK', ''))
+
+        with open(template_file, 'w') as f:
+            f.write(content)
+
+        logger.info("Updated interfaces template with Jenkins parameters")
 
     def default_route_template(self):
         """Update default route template with Jenkins parameters"""

@@ -71,7 +71,7 @@ def main():
         if args.step == 'api_keys':
             from steps.step_01_api_keys import Step01_APIKeys
             step = Step01_APIKeys()
-            success = step.execute()       
+            success = step.execute()
         elif args.step == 'add_dev_fmc':
             from steps.step_02_add_dev_fmc import Step02_ADD_DEV_FMC
             step = Step02_ADD_DEV_FMC()

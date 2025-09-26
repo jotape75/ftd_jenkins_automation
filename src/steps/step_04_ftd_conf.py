@@ -185,7 +185,6 @@ class Step04_FTD_CONF:
                 logger.info(f"Host object ID: {gw_host_id}")
             else:
                 logger.info(f"Failed to create host object {host_object['name']}. Status code: {response_post.status_code}")
-                logger.info(response_post.text)
                 return False
 
             # Get any IPv4 object ID
@@ -199,18 +198,8 @@ class Step04_FTD_CONF:
 
             static_route_payload["selectedNetworks"][0]["id"] = any_ipv4_id
             # Create route
-
-            route_url = fmc_routing_url.format(primary_status_id=primary_status_id)
-            logger.info(f"Creating static route at: {route_url}")
-            logger.info(f"Using primary device ID: {primary_status_id}")
-            logger.info(f"Final route payload: {json.dumps(static_route_payload, indent=2)}")
-            
-            response_route = requests.post(route_url, headers=rest_api_headers, data=json.dumps(static_route_payload), verify=False)
-            logger.info(f"Route creation status code: {response_route.status_code}")
-            logger.info(f"Route creation response headers: {dict(response_route.headers)}")
-            logger.info(f"Route creation response body: {response_route.text}")
-            #response_route = requests.post(fmc_routing_url.format(primary_status_id=primary_status_id), headers=rest_api_headers, data=json.dumps(static_route_payload), verify=False)
-            # response_route.raise_for_status()
+            response_route = requests.post(fmc_routing_url.format(primary_status_id=primary_status_id), headers=rest_api_headers, data=json.dumps(static_route_payload), verify=False)
+            response_route.raise_for_status()
 
             if response_route.status_code in [200, 201]:
                 route_response = response_route.json()
@@ -218,7 +207,6 @@ class Step04_FTD_CONF:
                 logger.info(f"Route ID: {route_response.get('id')}")
             else:
                 logger.info(f"Failed to create static route. Status code: {response_route.status_code}")
-                logger.info(response_route.text)
                 return False
 
         except requests.exceptions.RequestException as e:

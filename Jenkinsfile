@@ -42,32 +42,27 @@ pipeline {
 
         // HA and Network parameters
         choice(name: 'HA_INTERFACE', choices: ['GigabitEthernet0/3', 'GigabitEthernet0/4', 'GigabitEthernet0/5'], description: 'HA Interface')
-        
-        // Combined interface configurations  
-        choice(name: 'INSIDE_CONFIG', 
-               choices: ['GigabitEthernet0/0 | INSIDE | INSIDE_SEC_ZONE',
-                         'GigabitEthernet0/1 | INSIDE | INSIDE_SEC_ZONE',
-                         'GigabitEthernet0/2 | INSIDE | INSIDE_SEC_ZONE'], 
-               description: 'Inside: Interface | Name | Security Zone')
-        
+
+        // Combined interface configurations
+        choice(name: 'INSIDE_INTERFACE', choices: ['GigabitEthernet0/0','GigabitEthernet0/1','GigabitEthernet0/2','GigabitEthernet0/3','GigabitEthernet0/4'], description: 'Inside: Interface | Name')
+        string(name: 'INSIDE_INTERFACE_NAME', defaultValue: 'Inside', description: 'Inside Interface Name')
+        string(name: 'INSIDE_SEC_ZONE', defaultValue: 'Inside_Sec_Zone', description: 'Inside Security Zone')
         string(name: 'INSIDE_IP', defaultValue: '192.168.1.1', description: 'Inside Interface IP Address')
         string(name: 'INSIDE_MASK', defaultValue: '255.255.255.0', description: 'Inside Interface Subnet Mask')
-        
-        choice(name: 'OUTSIDE_CONFIG',
-               choices: ['GigabitEthernet0/0 | OUTSIDE | OUTSIDE_SEC_ZONE',
-                         'GigabitEthernet0/1 | OUTSIDE | OUTSIDE_SEC_ZONE', 
-                         'GigabitEthernet0/2 | OUTSIDE | OUTSIDE_SEC_ZONE'],
-               description: 'Outside: Interface | Name | Security Zone')
-        
+
+        // Outside interface configurations
+
+        choice(name: 'OUTSIDE_INTERFACE', choices: ['GigabitEthernet0/0','GigabitEthernet0/1','GigabitEthernet0/2'], description: 'Outside: Interface | Name')
+        string(name: 'OUTSIDE_INTERFACE_NAME', defaultValue: 'Outside', description: 'Outside Interface Name')
+        string(name: 'OUTSIDE_SEC_ZONE', defaultValue: 'Outside_Sec_Zone', description: 'Outside Security Zone')
         string(name: 'OUTSIDE_IP', defaultValue: '10.0.0.1', description: 'Outside Interface IP Address')
         string(name: 'OUTSIDE_MASK', defaultValue: '255.255.255.0', description: 'Outside Interface Subnet Mask')
-        
-        choice(name: 'DMZ_CONFIG',
-               choices: ['GigabitEthernet0/0 | DMZ | DMZ_SEC_ZONE',
-                         'GigabitEthernet0/1 | DMZ | DMZ_SEC_ZONE',
-                         'GigabitEthernet0/2 | DMZ | DMZ_SEC_ZONE'],
-               description: 'DMZ: Interface | Name | Security Zone')
-        
+
+        // DMZ interface configurations
+
+        choice(name: 'DMZ_INTERFACE', choices: ['GigabitEthernet0/0','GigabitEthernet0/1','GigabitEthernet0/2'], description: 'DMZ: Interface | Name')
+        string(name: 'DMZ_INTERFACE_NAME', defaultValue: 'DMZ', description: 'DMZ Interface Name')
+        string(name: 'DMZ_SEC_ZONE', defaultValue: 'DMZ_Sec_Zone', description: 'DMZ Security Zone') 
         string(name: 'DMZ_IP', defaultValue: '172.16.1.1', description: 'DMZ Interface IP Address')
         string(name: 'DMZ_MASK', defaultValue: '255.255.255.0', description: 'DMZ Interface Subnet Mask')
 
@@ -105,27 +100,25 @@ pipeline {
                     env.REGKEY = params.REGKEY
                     env.HA_INTERFACE = params.HA_INTERFACE
                     
-                    // Parse combined interface configurations
-                    def insideConfig = params.INSIDE_CONFIG.split(' \\| ')
-                    def outsideConfig = params.OUTSIDE_CONFIG.split(' \\| ')
-                    def dmzConfig = params.DMZ_CONFIG.split(' \\| ')
+                    // Parse combined interface parameters
+
                     
                     // Set parsed interface values
-                    env.INSIDE_INTERFACE = insideConfig[0]
-                    env.INSIDE_INTERFACE_NAME = insideConfig[1]
-                    env.INSIDE_SEC_ZONE = insideConfig[2]
+                    env.INSIDE_INTERFACE = params.INSIDE_INTERFACE
+                    env.INSIDE_INTERFACE_NAME = params.INSIDE_INTERFACE_NAME
+                    env.INSIDE_SEC_ZONE = params.INSIDE_SEC_ZONE
                     env.INSIDE_IP = params.INSIDE_IP
                     env.INSIDE_MASK = params.INSIDE_MASK
-                    
-                    env.OUTSIDE_INTERFACE = outsideConfig[0]
-                    env.OUTSIDE_INTERFACE_NAME = outsideConfig[1]
-                    env.OUTSIDE_SEC_ZONE = outsideConfig[2]
+
+                    env.OUTSIDE_INTERFACE = params.OUTSIDE_INTERFACE
+                    env.OUTSIDE_INTERFACE_NAME = params.OUTSIDE_INTERFACE_NAME
+                    env.OUTSIDE_SEC_ZONE = params.OUTSIDE_SEC_ZONE
                     env.OUTSIDE_IP = params.OUTSIDE_IP
                     env.OUTSIDE_MASK = params.OUTSIDE_MASK
-                    
-                    env.DMZ_INTERFACE = dmzConfig[0]
-                    env.DMZ_INTERFACE_NAME = dmzConfig[1]
-                    env.DMZ_SEC_ZONE = dmzConfig[2]
+
+                    env.DMZ_INTERFACE = params.DMZ_INTERFACE
+                    env.DMZ_INTERFACE_NAME = params.DMZ_INTERFACE_NAME
+                    env.DMZ_SEC_ZONE = params.DMZ_SEC_ZONE
                     env.DMZ_IP = params.DMZ_IP
                     env.DMZ_MASK = params.DMZ_MASK
 
@@ -138,9 +131,9 @@ pipeline {
                     echo "Target FMC: ${params.FMC_IP}"
                     echo "FTD Devices: ${params.FW_HOSTNAME_01}(${params.IP_ADD_FW_01}), ${params.FW_HOSTNAME_02}(${params.IP_ADD_FW_02})"
                     echo "HA Interface: ${params.HA_INTERFACE}"
-                    echo "INSIDE: ${insideConfig[0]}(${insideConfig[1]}) - ${params.INSIDE_IP}/${params.INSIDE_MASK} [${insideConfig[2]}]"
-                    echo "OUTSIDE: ${outsideConfig[0]}(${outsideConfig[1]}) - ${params.OUTSIDE_IP}/${params.OUTSIDE_MASK} [${outsideConfig[2]}]"
-                    echo "DMZ: ${dmzConfig[0]}(${dmzConfig[1]}) - ${params.DMZ_IP}/${params.DMZ_MASK} [${dmzConfig[2]}]"
+                    echo "INSIDE: ${params.INSIDE_INTERFACE}(${params.INSIDE_INTERFACE_NAME}) - ${params.INSIDE_IP}/${params.INSIDE_MASK} [${params.INSIDE_SEC_ZONE}]"
+                    echo "OUTSIDE: ${params.OUTSIDE_INTERFACE}(${params.OUTSIDE_INTERFACE_NAME}) - ${params.OUTSIDE_IP}/${params.OUTSIDE_MASK} [${params.OUTSIDE_SEC_ZONE}]"
+                    echo "DMZ: ${params.DMZ_INTERFACE}(${params.DMZ_INTERFACE_NAME}) - ${params.DMZ_IP}/${params.DMZ_MASK} [${params.DMZ_SEC_ZONE}]"
                 }
             }
         }

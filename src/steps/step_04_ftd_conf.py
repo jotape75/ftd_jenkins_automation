@@ -130,7 +130,8 @@ class Step04_FTD_CONF:
                 else:
                     logger.info(f"Failed to assign security zone to interface {interface_name} on device {primary_name}. Status code: {response_put.status_code}")
                     logger.info(response_put.text)
-                    
+            time.sleep(15)
+            
             #GET HA ID
             response_ha_id = requests.get(fmc_ha_settings_url, headers=rest_api_headers, verify=False)
             response_ha_id.raise_for_status()

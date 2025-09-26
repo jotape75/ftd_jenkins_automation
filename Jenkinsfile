@@ -150,62 +150,23 @@ pipeline {
             }
         }
         
-        // stage('Add devices to FMC') {
-        //     steps {
-        //         sh 'python3 src/main.py --step add_dev_fmc'
-        //     }
-        // }
+        stage('Add devices to FMC') {
+            steps {
+                sh 'python3 src/main.py --step add_dev_fmc'
+            }
+        }
         
-        // stage('Configure HA Settings') {
-        //     steps {
-        //         sh 'python3 src/main.py --step conf_ha'
-        //     }
-        // }
+        stage('Configure HA Settings') {
+            steps {
+                sh 'python3 src/main.py --step conf_ha'
+            }
+        }
         stage('Configure FTD') {
             steps {
                 sh 'python3 src/main.py --step ftd_conf'
             }
         }
     }
-    
-    // Additional stages for future expansion
-    // stages {
-    //     stage('Configure Interfaces') {
-    //         steps {
-    //             sh 'python3 src/main.py --step interface_config'
-    //         }
-    //     }
-        
-    //     stage('Configure Security Zones') {
-    //         steps {
-    //             sh 'python3 src/main.py --step zone_config'
-    //         }
-    //     }
-        
-    //     stage('Configure Routing') {
-    //         steps {
-    //             sh 'python3 src/main.py --step routing_config'
-    //         }
-    //     }
-        
-    //     stage('Configure Access Policies') {
-    //         steps {
-    //             sh 'python3 src/main.py --step policy_config'
-    //         }
-    //     }
-        
-    //     stage('Configure NAT Rules') {
-    //         steps {
-    //             sh 'python3 src/main.py --step nat_config'
-    //         }
-    //     }
-        
-    //     stage('Commit & Deploy Configuration') {
-    //         steps {
-    //             sh 'python3 src/main.py --step commit_deploy'
-    //         }
-    //     }
-    // }
     
     post {
         always {

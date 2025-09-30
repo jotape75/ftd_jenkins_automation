@@ -224,6 +224,7 @@ class Step04_FTD_CONF:
             logger.info(ha_monitored_int_json_dict)
 
             for ifname in self.fmc_int_settings.values():
+                logger.info(ifname['ifname'])
                 if ifname ['ifname'] in ha_monitored_int_json_dict.values():
                     matching_interface_id = None
                     for interface_id, interface_name in ha_monitored_int_json_dict.items():

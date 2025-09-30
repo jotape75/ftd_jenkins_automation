@@ -225,17 +225,17 @@ class Step04_FTD_CONF:
 
             for ifname in self.fmc_int_settings.values():
                 logger.info(ifname['ifname'])
-                if ifname ['ifname'] in ha_monitored_int_json_dict.values():
-                    matching_interface_id = None
-                    for interface_id, interface_name in ha_monitored_int_json_dict.items():
-                        if interface_name == ifname['ifname']:
-                            matching_interface_id = interface_id
+                # if ifname ['ifname'] in ha_monitored_int_json_dict.values():
+                #     matching_interface_id = None
+                #     for interface_id, interface_name in ha_monitored_int_json_dict.items():
+                #         if interface_name == ifname['ifname']:
+                #             matching_interface_id = interface_id
                             
 
-                            response_ha_monitored_int_detail = requests.get(ha_monitored_interfaces_detail.format(ha_id=ha_id,matching_interface_id=matching_interface_id), headers=rest_api_headers, verify=False)
-                            response_ha_monitored_int_detail.raise_for_status()
-                            ha_monitored_int_detail_json = response_ha_monitored_int_detail.json()
-                        logger.info(ha_monitored_int_detail_json)
+                #             response_ha_monitored_int_detail = requests.get(ha_monitored_interfaces_detail.format(ha_id=ha_id,matching_interface_id=matching_interface_id), headers=rest_api_headers, verify=False)
+                #             response_ha_monitored_int_detail.raise_for_status()
+                #             ha_monitored_int_detail_json = response_ha_monitored_int_detail.json()
+                #         logger.info(ha_monitored_int_detail_json)
 
                     # ha_monitored_int_detail_json.pop("links", None)
                     # ha_monitored_int_detail_json.pop("metadata", None)

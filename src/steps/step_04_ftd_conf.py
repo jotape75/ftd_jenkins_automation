@@ -66,7 +66,7 @@ class Step04_FTD_CONF:
             fmc_obj_network_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/networks"
             fmc_routing_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{primary_status_id}}/routing/ipv4staticroutes"
             ha_monitored_interfaces = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces"
-            ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{interface_id_ha_monitored}}"
+            ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{matching_interface_id}}"
             ### CREATE SECURITY ZONES ###
 
         #     zones_id_list = []
@@ -220,9 +220,39 @@ class Step04_FTD_CONF:
                 name = monitored.get('name')
                 interface_id_ha_monitored = monitored.get('id')
                 ha_monitored_int_json_dict[interface_id_ha_monitored] = name
+            logger.info("HA Monitored Interfaces:")
             logger.info(ha_monitored_int_json_dict)
 
+            for ifname in self.fmc_int_settings.values():
+                if ifname ['ifname'] in ha_monitored_int_json_dict.values():
+                    matching_interface_id = None
+                    for interface_id, interface_name in ha_monitored_int_json_dict.items():
+                        if interface_name == ifname['ifname']:
+                            matching_interface_id = interface_id
+                            break
 
+                        response_ha_monitored_int_detail = requests.get(ha_monitored_interfaces_detail.format(ha_id=ha_id,matching_interface_id=matching_interface_id), headers=rest_api_headers, verify=False)
+                        response_ha_monitored_int_detail.raise_for_status()
+                        ha_monitored_int_detail_json = response_ha_monitored_int_detail.json()
+                    logger.info(ha_monitored_int_detail_json)
+
+                    # ha_monitored_int_detail_json.pop("links", None)
+                    # ha_monitored_int_detail_json.pop("metadata", None)
+                    # ha_monitored_int_detail_json["enabled"] = True
+                    # ha_monitored_int_detail_json["ipv4"] = {
+                    #     "static": {
+                    #         "address": self.fmc_int_settings['ip_address'],
+                    #         "netmask": self.fmc_int_settings['netmask']
+                    #     }
+                    # }
+                    # response_put_ha = requests.put(ha_monitored_interfaces_detail.format(ha_id=ha_id,interface_id_ha_monitored=interface_id_ha_monitored), headers=rest_api_headers, data=json.dumps(ha_monitored_int_detail_json), verify=False)
+                    # response_put_ha.raise_for_status()
+                    # if response_put_ha.status_code in [200, 201]:
+                    #     logger.info(f'IP address assigned to HA monitored interface {name} successfully.')
+                    # else:
+                    #     logger.info(f"Failed to assign IP address to HA monitored interface {name}. Status code: {response_put_ha.status_code}")
+                    #     logger.info(response_put_ha.text)
+                    # logger.info(f" - {name}")
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False

@@ -213,7 +213,7 @@ class Step04_FTD_CONF:
             # Configured Stanby IP for HA
             # time.sleep(5)
             ha_monitored_int_json_dict = {}
-            response_ha_monitored_int = requests.get(ha_monitored_interfaces, headers=rest_api_headers, verify=False)
+            response_ha_monitored_int = requests.get(ha_monitored_interfaces.format(ha_id=ha_id), headers=rest_api_headers, verify=False)
             response_ha_monitored_int.raise_for_status()        
             ha_monitored_int_json = response_ha_monitored_int.json()
             for monitored in ha_monitored_int_json:

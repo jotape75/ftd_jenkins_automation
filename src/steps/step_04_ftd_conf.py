@@ -215,10 +215,10 @@ class Step04_FTD_CONF:
             ha_monitored_int_json_dict = {}
             response_ha_monitored_int = requests.get(ha_monitored_interfaces.format(ha_id=ha_id), headers=rest_api_headers, verify=False)
             response_ha_monitored_int.raise_for_status()        
-            ha_monitored_int_json = response_ha_monitored_int.json()
+            ha_monitored_int_json = response_ha_monitored_int.json().get('items', [])
             for monitored in ha_monitored_int_json:
-                name = monitored.get("name")
-                interface_id_ha_monitored = monitored.get("id")
+                name = monitored.get('name')
+                interface_id_ha_monitored = monitored.get('id')
                 ha_monitored_int_json_dict[interface_id_ha_monitored] = name
             logger.info(ha_monitored_int_json_dict)
 

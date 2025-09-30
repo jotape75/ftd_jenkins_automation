@@ -234,7 +234,7 @@ class Step04_FTD_CONF:
                             response_ha_monitored_int_detail = requests.get(ha_monitored_interfaces_detail.format(ha_id=ha_id,matching_interface_id=matching_interface_id), headers=rest_api_headers, verify=False)
                             response_ha_monitored_int_detail.raise_for_status()
                             ha_monitored_int_detail_json = response_ha_monitored_int_detail.json()
-                            logger.info(ha_monitored_int_detail_json)
+                        logger.info(ha_monitored_int_detail_json)
 
                     # ha_monitored_int_detail_json.pop("links", None)
                     # ha_monitored_int_detail_json.pop("metadata", None)

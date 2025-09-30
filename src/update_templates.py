@@ -124,11 +124,31 @@ class TemplateUpdater:
         content = content.replace('{OUTSIDE_INTERFACE_NAME}', os.getenv('OUTSIDE_INTERFACE_NAME', ''))
         content = content.replace('{GW_OUTSIDE}', GW_OUTSIDE)
 
+        # Write back
         with open(template_file, 'w') as f:
             f.write(content)
 
         logger.info("Updated default route template with Jenkins parameters")
+    def update_ha_standby_template():
+        """Update HA standby IP template with user inputs"""
 
+        template_path = 'data/payload/ha_standby_ip.json'
+        
+        # Read template
+        with open(template_path, 'r') as f:
+            template_content = f.read()
+        
+        # Replace placeholders
+        template_content = template_content.replace('{OUTSIDE_STANDBY_IP}', os.getenv('OUTSIDE_STANDBY_IP', ''))
+        template_content = template_content.replace('{INSIDE_STANDBY_IP}', os.getenv('INSIDE_STANDBY_IP', ''))
+        template_content = template_content.replace('{DMZ_STANDBY_IP}', os.getenv('DMZ_STANDBY_IP', ''))
+        
+        # Write back
+        with open(template_path, 'w') as f:
+            f.write(template_content)
+        
+        logger.info("HA standby IP template updated successfully")
+        
     def execute(self):
         """Execute all template updates"""
         try:
@@ -144,6 +164,7 @@ class TemplateUpdater:
             self.update_sec_zones_template()
             self.update_interfaces_template()
             self.default_route_template()
+            self.update_ha_standby_template()
             
             logger.info("All templates updated successfully!")
             return True

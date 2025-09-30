@@ -1,0 +1,7 @@
+{
+  "standby_ips": {
+    "Outside": "{OUTSIDE_STANDBY_IP}",
+    "Inside": "{INSIDE_STANDBY_IP}",
+    "DMZ": "{DMZ_STANDBY_IP}"
+  }
+}

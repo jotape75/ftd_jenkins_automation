@@ -49,6 +49,7 @@ pipeline {
         string(name: 'INSIDE_SEC_ZONE', defaultValue: 'Inside_Sec_Zone', description: 'Inside Security Zone')
         string(name: 'INSIDE_IP', defaultValue: '192.168.1.1', description: 'Inside Interface IP Address')
         string(name: 'INSIDE_MASK', defaultValue: '255.255.255.0', description: 'Inside Interface Subnet Mask')
+        string(name: 'INSIDE_STANDBY_IP', defaultValue: '192.168.1.2', description: 'Inside Interface Standby IP')
 
         // Outside interface configurations
 
@@ -57,6 +58,8 @@ pipeline {
         string(name: 'OUTSIDE_SEC_ZONE', defaultValue: 'Outside_Sec_Zone', description: 'Outside Security Zone')
         string(name: 'OUTSIDE_IP', defaultValue: '10.0.0.1', description: 'Outside Interface IP Address')
         string(name: 'OUTSIDE_MASK', defaultValue: '255.255.255.0', description: 'Outside Interface Subnet Mask')
+        string(name: 'OUTSIDE_STANDBY_IP', defaultValue: '10.0.0.2', description: 'Outside Interface Standby IP')
+
 
         // DMZ interface configurations
 
@@ -64,6 +67,7 @@ pipeline {
         string(name: 'DMZ_INTERFACE_NAME', defaultValue: 'DMZ', description: 'DMZ Interface Name')
         string(name: 'DMZ_SEC_ZONE', defaultValue: 'DMZ_Sec_Zone', description: 'DMZ Security Zone') 
         string(name: 'DMZ_IP', defaultValue: '172.16.1.1', description: 'DMZ Interface IP Address')
+        string(name: 'DMZ_STANDBY_IP', defaultValue: '172.16.1.2', description: 'DMZ Interface Standby IP')
         string(name: 'DMZ_MASK', defaultValue: '255.255.255.0', description: 'DMZ Interface Subnet Mask')
 
         // Default route
@@ -109,18 +113,22 @@ pipeline {
                     env.INSIDE_SEC_ZONE = params.INSIDE_SEC_ZONE
                     env.INSIDE_IP = params.INSIDE_IP
                     env.INSIDE_MASK = params.INSIDE_MASK
+                    env.INSIDE_STANDBY_IP = params.INSIDE_STANDBY_IP
 
                     env.OUTSIDE_INTERFACE = params.OUTSIDE_INTERFACE
                     env.OUTSIDE_INTERFACE_NAME = params.OUTSIDE_INTERFACE_NAME
                     env.OUTSIDE_SEC_ZONE = params.OUTSIDE_SEC_ZONE
                     env.OUTSIDE_IP = params.OUTSIDE_IP
                     env.OUTSIDE_MASK = params.OUTSIDE_MASK
+                    env.OUTSIDE_STANDBY_IP = params.OUTSIDE_STANDBY_IP
 
                     env.DMZ_INTERFACE = params.DMZ_INTERFACE
                     env.DMZ_INTERFACE_NAME = params.DMZ_INTERFACE_NAME
                     env.DMZ_SEC_ZONE = params.DMZ_SEC_ZONE
                     env.DMZ_IP = params.DMZ_IP
                     env.DMZ_MASK = params.DMZ_MASK
+                    env.DMZ_STANDBY_IP = params.DMZ_STANDBY_IP
+                    
 
                     // Default route
                     env.DEFAULT_ROUTE_GATEWAY = params.DEFAULT_ROUTE_GATEWAY

@@ -225,7 +225,7 @@ class Step04_FTD_CONF:
 
             for ifname in self.fmc_int_settings.values():
                 if ifname ['ifname'] in ha_monitored_int_json_dict.values():
-                    for interface_id, interface_name in ha_monitored_int_json_dict.items():
+                    for interface_name, interface_id in ha_monitored_int_json_dict.items():
                         if interface_name == ifname['ifname']:
                             response_ha_monitored_int_detail = requests.get(ha_monitored_interfaces_detail.format(ha_id=ha_id,matching_interface_id=interface_id), headers=rest_api_headers, verify=False)
                             response_ha_monitored_int_detail.raise_for_status()
@@ -237,7 +237,7 @@ class Step04_FTD_CONF:
                                 ha_monitored_int_detail_json.pop("links", None)
                                 ha_monitored_int_detail_json.pop("metadata", None)
                                 ha_monitored_int_detail_json['ipv4Configuration']['standbyIPv4Address'] = standby_ip
-                                response_put = requests.put(ha_monitored_interfaces_detail.format(ha_id=ha_id, interface_id_ha_monitored=interface_id), headers=rest_api_headers, data=json.dumps(ha_monitored_int_detail_json), verify=False)
+                                response_put = requests.put(ha_monitored_interfaces_detail.format(ha_id=ha_id, matching_interface_id=interface_id), headers=rest_api_headers, data=json.dumps(ha_monitored_int_detail_json), verify=False)
                                 if response_put.status_code in [200, 201]:
                                     logger.info(f'Standby IP {standby_ip} configured successfully for interface {int_name}')
                                 else:

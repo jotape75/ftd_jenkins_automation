@@ -234,17 +234,17 @@ class Step04_FTD_CONF:
                             ha_monitored_int_detail_json = response_ha_monitored_int_detail.json()
                             logger.info(ha_monitored_int_detail_json)
                             int_name = ha_monitored_int_detail_json.get('name')
-                        if int_name in self.fmc_ha_standby_settings['standby_ips'] and 'ipv4Configuration' in ha_monitored_int_detail_json:
-                            standby_ip = self.fmc_ha_standby_settings['standby_ips'][int_name]
-                            ha_monitored_int_detail_json.pop("links", None)
-                            ha_monitored_int_detail_json.pop("metadata", None)
-                            ha_monitored_int_detail_json['ipv4Configuration']['standbyIPv4Address'] = standby_ip
-                            response_put = requests.put(ha_monitored_interfaces_detail.format(ha_id=ha_id, interface_id_ha_monitored=matching_interface_id), headers=rest_api_headers, data=json.dumps(ha_monitored_int_detail_json), verify=False)
-                            if response_put.status_code in [200, 201]:
-                                logger.info(f'Standby IP {standby_ip} configured successfully for interface {int_name}')
-                            else:
-                                logger.error(f' Failed to configure standby IP for {standby_ip}. Status: {response_put.status_code}')
-                                logger.error(response_put.text)
+                            if int_name in self.fmc_ha_standby_settings['standby_ips'] and 'ipv4Configuration' in ha_monitored_int_detail_json:
+                                standby_ip = self.fmc_ha_standby_settings['standby_ips'][int_name]
+                                ha_monitored_int_detail_json.pop("links", None)
+                                ha_monitored_int_detail_json.pop("metadata", None)
+                                ha_monitored_int_detail_json['ipv4Configuration']['standbyIPv4Address'] = standby_ip
+                                response_put = requests.put(ha_monitored_interfaces_detail.format(ha_id=ha_id, interface_id_ha_monitored=matching_interface_id), headers=rest_api_headers, data=json.dumps(ha_monitored_int_detail_json), verify=False)
+                                if response_put.status_code in [200, 201]:
+                                    logger.info(f'Standby IP {standby_ip} configured successfully for interface {int_name}')
+                                else:
+                                    logger.error(f' Failed to configure standby IP for {standby_ip}. Status: {response_put.status_code}')
+                                    logger.error(response_put.text)
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False

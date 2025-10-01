@@ -38,4 +38,5 @@ FTD_HA_TEMPLATE = f"{get_project_root()}/data/payload/fmc_ha_payload.json"
 FTD_SEC_ZONES_TEMPLATE = f"{get_project_root()}/data/payload/sec_zones.json"
 FTD_INT_TEMPLATE = f"{get_project_root()}/data/payload/interface.json"
 FTD_STATIC_ROUTE_TEMPLATE = f"{get_project_root()}/data/payload/default_route.json"
+FTD_HA_STANDBY_TEMPLATE = f"{get_project_root()}/data/payload/ha_standby_ip.json"
 

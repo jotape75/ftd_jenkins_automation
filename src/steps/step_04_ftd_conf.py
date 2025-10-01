@@ -233,24 +233,18 @@ class Step04_FTD_CONF:
                             response_ha_monitored_int_detail.raise_for_status()
                             ha_monitored_int_detail_json = response_ha_monitored_int_detail.json()
                             logger.info(ha_monitored_int_detail_json)
-
-                    # ha_monitored_int_detail_json.pop("links", None)
-                    # ha_monitored_int_detail_json.pop("metadata", None)
-                    # ha_monitored_int_detail_json["enabled"] = True
-                    # ha_monitored_int_detail_json["ipv4"] = {
-                    #     "static": {
-                    #         "address": self.fmc_int_settings['ip_address'],
-                    #         "netmask": self.fmc_int_settings['netmask']
-                    #     }
-                    # }
-                    # response_put_ha = requests.put(ha_monitored_interfaces_detail.format(ha_id=ha_id,interface_id_ha_monitored=interface_id_ha_monitored), headers=rest_api_headers, data=json.dumps(ha_monitored_int_detail_json), verify=False)
-                    # response_put_ha.raise_for_status()
-                    # if response_put_ha.status_code in [200, 201]:
-                    #     logger.info(f'IP address assigned to HA monitored interface {name} successfully.')
-                    # else:
-                    #     logger.info(f"Failed to assign IP address to HA monitored interface {name}. Status code: {response_put_ha.status_code}")
-                    #     logger.info(response_put_ha.text)
-                    # logger.info(f" - {name}")
+                            int_name = ha_monitored_int_detail_json.get('name')
+                        if int_name in self.fmc_ha_standby_settings['standby_ips'] and 'ipv4Configuration' in ha_monitored_int_detail_json:
+                            standby_ip = self.fmc_ha_standby_settings['standby_ips'][int_name]
+                            ha_monitored_int_detail_json.pop("links", None)
+                            ha_monitored_int_detail_json.pop("metadata", None)
+                            ha_monitored_int_detail_json['ipv4Configuration']['standbyIPv4Address'] = standby_ip
+                            response_put = requests.put(ha_monitored_interfaces_detail.format(ha_id=ha_id, interface_id_ha_monitored=matching_interface_id), headers=rest_api_headers, data=json.dumps(ha_monitored_int_detail_json), verify=False)
+                            if response_put.status_code in [200, 201]:
+                                logger.info(f'Standby IP {standby_ip} configured successfully for interface {int_name}')
+                            else:
+                                logger.error(f' Failed to configure standby IP for {standby_ip}. Status: {response_put.status_code}')
+                                logger.error(response_put.text)
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False
@@ -258,12 +252,13 @@ class Step04_FTD_CONF:
         return True
 
     def load_devices_templates(self):
-        from utils_ftd import FTD_HA_TEMPLATE,FTD_SEC_ZONES_TEMPLATE,FTD_INT_TEMPLATE,FTD_STATIC_ROUTE_TEMPLATE
+        from utils_ftd import FTD_HA_TEMPLATE,FTD_SEC_ZONES_TEMPLATE,FTD_INT_TEMPLATE,FTD_STATIC_ROUTE_TEMPLATE,FTD_HA_STANDBY_TEMPLATE
 
         with open(FTD_HA_TEMPLATE, 'r') as f0, \
             open(FTD_SEC_ZONES_TEMPLATE, 'r') as f1, \
             open(FTD_INT_TEMPLATE, 'r') as f2, \
-            open(FTD_STATIC_ROUTE_TEMPLATE, 'r') as f3:
+            open(FTD_STATIC_ROUTE_TEMPLATE, 'r') as f3, \
+            open(FTD_HA_STANDBY_TEMPLATE, 'r') as f4:
             
             self.ftd_ha_tmp = json.load(f0)
             logger.info("Loaded FTD HA template")
@@ -273,3 +268,5 @@ class Step04_FTD_CONF:
             logger.info("Loaded FTD interfaces configuration template")
             self.fmc_route_settings = json.load(f3)
             logger.info("Loaded FTD static route configuration template")
+            self.fmc_ha_standby_settings = json.load(f4)
+            logger.info("Loaded FTD HA standby IP configuration template")

@@ -89,15 +89,14 @@ class Step05_FMC_DEPLOYMENT:
                     for ha in ha_output:
                         if ha.get('name') == self.ftd_ha_tmp['ha_payload']['name']:
                             ha_id = ha.get("id")
-                            break
-                    logger.info("HA ID: %s", ha_id)
-                    response_ha_check = requests.get(fmc_ha_check_url.format(ha_id=ha_id), headers=rest_api_headers, verify=False)
-                    response_ha_check.raise_for_status()
-                    ha_json = response_ha_check.json()
-                    logger.info(f'Active device is {ha_json["metadata"]["primaryStatus"]["device"]["name"]}')
-                    logger.info(response_ha_check.text)
-                    primary_status_id = ha_json["metadata"]["primaryStatus"]["device"]["id"]
-                    logger.info("Primary Device ID: %s", primary_status_id)
+                            logger.info("HA ID: %s", ha_id)
+                            response_ha_check = requests.get(fmc_ha_check_url.format(ha_id=ha_id), headers=rest_api_headers, verify=False)
+                            response_ha_check.raise_for_status()
+                            ha_json = response_ha_check.json()
+                            logger.info(f'Active device is {ha_json["metadata"]["primaryStatus"]["device"]["name"]}')
+                            logger.info(response_ha_check.text)
+                            primary_status_id = ha_json["metadata"]["primaryStatus"]["device"]["id"]
+                            logger.info("Primary Device ID: %s", primary_status_id)
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")

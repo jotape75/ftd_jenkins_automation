@@ -114,13 +114,14 @@ class Step05_FMC_DEPLOYMENT:
                                 device_list = latest_job.get('deviceList', [])
                                 for device in device_list:
                                     if device.get("deviceUUID") == primary_status_id:
+                                        device_name = device.get("name")
                                         deployment_status = device.get("deploymentStatus")
-                                        logger.info(f"Deployment status for {device.get('name')}: {deployment_status}")
+                                        logger.info(f"Deployment status for {device_name}: {deployment_status}")
                                         if deployment_status == "SUCCEEDED":
-                                            logger.info(f"Deployment for {device.get('name')} completed successfully.")
+                                            logger.info(f"Deployment for {device_name} completed successfully.")
                                             return True
                                         elif deployment_status == "FAILED":
-                                            logger.error(f"Deployment for {device.get('name')} failed.")
+                                            logger.error(f"Deployment for {device_name} failed.")
                                             return False
                                 time.sleep(10)
 

@@ -67,26 +67,36 @@ class Step04_FTD_CONF:
             fmc_routing_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{primary_status_id}}/routing/ipv4staticroutes"
             ha_monitored_interfaces = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces"
             ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{matching_interface_id}}"
-            ### CREATE SECURITY ZONES ###
+            ## CREATE SECURITY ZONES ###
 
-        #     zones_id_list = []
-        #     for zone in self.ftd_sec_zones_tmp["sec_zones_payload"]:
-        #         response_zones = requests.post(fmc_sec_zones_url, headers=rest_api_headers, data=json.dumps(zone), verify=False)
-        #         response_zones.raise_for_status()
-        #         zones = response_zones.json()
-        #         zones_id = zones.get('id')
-        #         zones_id_list.append(zones_id)
+            zones_id_list = []
+            get_zones = requests.get(fmc_sec_zones_url, headers=rest_api_headers, verify=False)
+            get_zones.raise_for_status()
+            existing_zones = get_zones.json().get('items', [])
+            for zones in existing_zones:
+                if zones.get('name') not in self.ftd_sec_zones_tmp["sec_zones_payload"]:
+                    
+                    for zone in self.ftd_sec_zones_tmp["sec_zones_payload"]:
+                        response_zones = requests.post(fmc_sec_zones_url, headers=rest_api_headers, data=json.dumps(zone), verify=False)
+                        response_zones.raise_for_status()
+                        zones = response_zones.json()
+                        zones_id = zones.get('id')
+                        zones_id_list.append(zones_id)
 
-        #         if response_zones.status_code in [200, 201]:
-        #             logger.info(f"Security zone {zone['name']} created successfully.")
-        #         else:
-        #             logger.info(f"Failed to create security zone {zone['name']}. Status code: {response_zones.status_code}")
-        #             logger.info(response_zones.text)
-        #             return False
-        #     time.sleep(5)
-        # except requests.exceptions.RequestException as e:
-        #     logger.error(f"Error: {e}")
-        #     return False
+                        if response_zones.status_code in [200, 201]:
+                            logger.info(f"Security zone {zone['name']} created successfully.")
+                        else:
+                            logger.info(f"Failed to create security zone {zone['name']}. Status code: {response_zones.status_code}")
+                            logger.info(response_zones.text)
+                            return False
+                else:
+                    zones_id_list.append(zones.get('id'))
+                    logger.info(f"Security zone {zones.get('name')} already exists. Skipping creation.")
+
+            time.sleep(5)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error: {e}")
+            return False
         
         ### CONFIGURE INTERFACES ###
         # try:

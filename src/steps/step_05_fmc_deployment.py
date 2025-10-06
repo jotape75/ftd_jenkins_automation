@@ -66,7 +66,7 @@ class Step05_FMC_DEPLOYMENT:
             ha_monitored_interfaces = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces"
             ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{matching_interface_id}}"
             deployable_devices = f'https://192.168.0.201/api/fmc_config/v1/domain/default/deployment/deployabledevices'
-            ha_check_url = f'https://192.168.0.201/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{ha_id}'
+            ha_check_url = f'https://192.168.0.201/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}'
 
 
             ### GET Deployable devices ###

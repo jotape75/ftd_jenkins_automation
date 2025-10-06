@@ -108,15 +108,20 @@ class Step05_FMC_DEPLOYMENT:
                             while True:
                                 monitor_response = requests.get(monitor_deployments, headers=rest_api_headers, verify=False)
                                 monitor_response.raise_for_status()
-                                monitor_data = monitor_response.json()
-                                job_status = monitor_data.get("jobStatus")
-                                logger.info(f"Deployment status for {active_device}: {job_status}")
-                                if job_status == "DEPLOYED":
-                                    logger.info(f"Deployment for {active_device} completed successfully.")
-                                    break
-                                elif job_status == "FAILED":
-                                    logger.error(f"Deployment for {active_device} failed.")
-                                    return False
+                                monitor_data = monitor_response.json().get('items', [])
+                                # Check the latest job for our target device
+                                latest_job = monitor_data[0]
+                                device_list = latest_job.get('deviceList', [])
+                                for device in device_list:
+                                    if device.get("deviceUUID") == primary_status_id:
+                                        deployment_status = device.get("deploymentStatus")
+                                        logger.info(f"Deployment status for {device.get('name')}: {deployment_status}")
+                                        if deployment_status == "SUCCEEDED":
+                                            logger.info(f"Deployment for {device.get('name')} completed successfully.")
+                                            return True
+                                        elif deployment_status == "FAILED":
+                                            logger.error(f"Deployment for {device.get('name')} failed.")
+                                            return False
                                 time.sleep(10)
 
         except requests.exceptions.RequestException as e:

@@ -162,9 +162,14 @@ pipeline {
         //         sh 'python3 src/main.py --step conf_ha'
         //     }
         // }
-        stage('Configure FTD') {
+        // stage('Configure FTD') {
+        //     steps {
+        //         sh 'python3 src/main.py --step ftd_conf'
+        //     }
+        // }
+        stage('FMC FINAL DEPLOYMENT') {
             steps {
-                sh 'python3 src/main.py --step ftd_conf'
+                sh 'python3 src/main.py --step fmc_deployment'
             }
         }
     }

@@ -80,10 +80,14 @@ def main():
         #     from steps.step_03_conf_ha import Step03_HAConfig
         #     step = Step03_HAConfig()
         #     success = step.execute()
-        elif args.step == 'ftd_conf':
-            from steps.step_04_ftd_conf import Step04_FTD_CONF
-            step = Step04_FTD_CONF()
-            success = step.execute()  
+        # elif args.step == 'ftd_conf':
+        #     from steps.step_04_ftd_conf import Step04_FTD_CONF
+        #     step = Step04_FTD_CONF()
+        #     success = step.execute()  
+        elif args.step == 'fmc_deployment':
+            from steps.step_05_fmc_deployment import Step05_FMC_DEPLOYMENT
+            step = Step05_FMC_DEPLOYMENT()
+            success = step.execute()
         else:
             logger.error(f"Unknown step: {args.step}")
             available_steps = ['api_keys', 'ha_interfaces', 'ha_config']

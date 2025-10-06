@@ -106,7 +106,8 @@ class Step05_FMC_DEPLOYMENT:
 
                             # Monitor deployment status
                             timeout_counter = 0
-                            max_timeout = 30  # 5 minutes maximum
+                            max_timeout = 300
+                            poll_interval = 10
                          
                             while timeout_counter < max_timeout:
                                 try:
@@ -114,12 +115,6 @@ class Step05_FMC_DEPLOYMENT:
                                     monitor_response.raise_for_status()
                                     monitor_data = monitor_response.json().get('items', [])
 
-                                    if not monitor_data:
-                                        logger.warning("No deployment jobs found")
-                                        time.sleep(10)
-                                        timeout_counter += 1
-                                        continue
-                            
                                     # Check the latest job for our target device
                                     latest_job = monitor_data[0]
                                     device_list = latest_job.get('deviceList', [])
@@ -127,7 +122,7 @@ class Step05_FMC_DEPLOYMENT:
                                         if device.get("deviceUUID") == primary_status_id:
                                             device_name = device.get("deviceName")
                                             deployment_status = device.get("deploymentStatus")
-                                            logger.info(f"Deployment status for {device_name}: {deployment_status} - Attempt {timeout_counter + 1}/{max_timeout}")
+                                            logger.info(f"Deployment status for {device_name}: {deployment_status} - {timeout_counter } seconds")
                                             if deployment_status == "SUCCEEDED":
                                                 logger.info(f"Deployment for {device_name} completed successfully.")
                                                 return True
@@ -135,12 +130,12 @@ class Step05_FMC_DEPLOYMENT:
                                                 logger.error(f"Deployment for {device_name} failed. Check FMC for details.")
                                                 return False
                                             
-                                    time.sleep(10)
-                                    timeout_counter += 1
+                                    time.sleep(poll_interval)
+                                    timeout_counter += poll_interval
                                 except Exception as e:
                                     logger.error(f"Error while monitoring deployment: {e}")
-                                    time.sleep(10)
-                                    timeout_counter += 1
+                                    time.sleep(poll_interval)
+                                    timeout_counter += poll_interval
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")

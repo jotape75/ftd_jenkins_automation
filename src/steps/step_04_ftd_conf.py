@@ -74,7 +74,7 @@ class Step04_FTD_CONF:
             get_zones.raise_for_status()
             existing_zones = get_zones.json().get('items', [])
             for zones in existing_zones:
-                if zones.get('name') not in self.ftd_sec_zones_tmp["sec_zones_payload"]:
+                if zones.get('name') not in self.ftd_sec_zones_tmp["sec_zones_payload"]["name"]:
                     
                     for zone in self.ftd_sec_zones_tmp["sec_zones_payload"]:
                         response_zones = requests.post(fmc_sec_zones_url, headers=rest_api_headers, data=json.dumps(zone), verify=False)

@@ -66,6 +66,7 @@ class Step05_FMC_DEPLOYMENT:
             ha_monitored_interfaces = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces"
             ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{matching_interface_id}}"
             deployable_devices = f'https://192.168.0.201/api/fmc_config/v1/domain/default/deployment/deployabledevices'
+            ha_check_url = f'https://192.168.0.201/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{ha_id}'
 
 
             ### GET Deployable devices ###
@@ -77,10 +78,9 @@ class Step05_FMC_DEPLOYMENT:
             for dev in deployable_dev_json:
                 name = dev.get('name')
                 dev_version = dev.get('version')
-                deployable_dev_dict[dev_version] = name
-                logger.info("Deployable Devices:")
-                logger.info(deployable_dev_dict)
                 if name == self.ftd_ha_tmp['ha_payload']['name']:
+                    deployable_dev_dict[dev_version] = name
+                    logger.info("Deployable Devices: %s", deployable_dev_dict)
                     #GET HA ID
                     response_ha_id = requests.get(fmc_ha_settings_url, headers=rest_api_headers, verify=False)
                     response_ha_id.raise_for_status()
@@ -90,8 +90,15 @@ class Step05_FMC_DEPLOYMENT:
                         if ha.get('name') == self.ftd_ha_tmp['ha_payload']['name']:
                             ha_id = ha.get("id")
                             break
-                logger.info("HA ID:")
-                logger.info(ha_id)
+                    logger.info("HA ID: %s", ha_id)
+                    response_ha_check = requests.get(fmc_ha_check_url.format(ha_id=ha_id), headers=rest_api_headers, verify=False)
+                    response_ha_check.raise_for_status()
+                    ha_json = response_ha_check.json()
+                    logger.info(f'Active device is {ha_json["metadata"]["primaryStatus"]["device"]["name"]}')
+                    logger.info(response_ha_check.text)
+                    primary_status_id = ha_json["metadata"]["primaryStatus"]["device"]["id"]
+                    logger.info("Primary Device ID: %s", primary_status_id)
+
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False

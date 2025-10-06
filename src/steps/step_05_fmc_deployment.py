@@ -61,7 +61,7 @@ class Step05_FMC_DEPLOYMENT:
             fmc_ha_check_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}"
             deployable_devices = f'https://{self.fmc_ip}/api/fmc_config/v1/domain/default/deployment/deployabledevices'
             deployment_requests = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/deployment/deploymentrequests"
-
+            monitor_deployments = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/deployment/jobhistories?expanded=true"
             ### GET Deployable devices ###
                 
             response_deployable_devices = requests.get(deployable_devices, headers=rest_api_headers, verify=False)
@@ -80,28 +80,44 @@ class Step05_FMC_DEPLOYMENT:
                     for ha in ha_output:
                         if ha.get('name') == self.ftd_ha_tmp['ha_payload']['name']:
                             ha_id = ha.get("id")
-                            logger.info("HA ID: %s", ha_id)
+                            logger.info(f"HA ID: {ha_id}")
                             response_ha_check = requests.get(fmc_ha_check_url.format(ha_id=ha_id), headers=rest_api_headers, verify=False)
                             response_ha_check.raise_for_status()
                             ha_json = response_ha_check.json()
-                            logger.info(f'Active device is {ha_json["metadata"]["primaryStatus"]["device"]["name"]}')
+                            active_device = ha_json["metadata"]["primaryStatus"]["device"]["name"]
+                            logger.info(f'Active device is {active_device}')
                             primary_status_id = ha_json["metadata"]["primaryStatus"]["device"]["id"]
-                            logger.info("Primary Device ID: %s", primary_status_id)
+                            logger.info(f"Primary Device ID: {primary_status_id}")
                             ### Perform Deployment ###
                             deployment_payload = {
                                 "type": "DeploymentRequest",
-                                "version": dev_version,  # ← This is the key!
+                                "version": dev_version,
                                 "forceDeploy": True,
                                 "ignoreWarning": True,
                                 "deviceList": [primary_status_id],
-                                "deploymentNote": "API deployment with correct version"
+                                "deploymentNote": "Final deployment via Jenkins"
                             }
                             deployment_response = requests.post(deployment_requests, headers=rest_api_headers, data=json.dumps(deployment_payload), verify=False)
                             if deployment_response.status_code == 202:
-                                logger.info("Deployment initiated successfully.")
+                                logger.info(f"Deployment for {active_device} initiated successfully.")
                             else:
-                                logger.error(f"Deployment initiation failed: {deployment_response.status_code} - {deployment_response.text}")
+                                logger.error(f"Deployment initiation for {active_device} failed: {deployment_response.status_code} - {deployment_response.text}")
                                 return False
+
+                            # Monitor deployment status
+                            while True:
+                                monitor_response = requests.get(monitor_deployments, headers=rest_api_headers, verify=False)
+                                monitor_response.raise_for_status()
+                                monitor_data = monitor_response.json()
+                                job_status = monitor_data.get("jobStatus")
+                                logger.info(f"Deployment status for {active_device}: {job_status}")
+                                if job_status == "DEPLOYED":
+                                    logger.info(f"Deployment for {active_device} completed successfully.")
+                                    break
+                                elif job_status == "FAILED":
+                                    logger.error(f"Deployment for {active_device} failed.")
+                                    return False
+                                time.sleep(10)
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")

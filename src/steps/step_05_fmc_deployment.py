@@ -71,7 +71,7 @@ class Step05_FMC_DEPLOYMENT:
                 name = dev.get('name')
                 if name == self.ftd_ha_tmp['ha_payload']['name']:
                     dev_version = dev.get('version')
-                    logger.info(f"Deployable Devices: %s, {name}: {dev_version}")
+                    logger.info(f"Deployable Devices: {name}: {dev_version}")
                     #GET HA ID
                     response_ha_id = requests.get(fmc_ha_settings_url, headers=rest_api_headers, verify=False)
                     response_ha_id.raise_for_status()
@@ -105,25 +105,42 @@ class Step05_FMC_DEPLOYMENT:
                                 return False
 
                             # Monitor deployment status
-                            while True:
-                                monitor_response = requests.get(monitor_deployments, headers=rest_api_headers, verify=False)
-                                monitor_response.raise_for_status()
-                                monitor_data = monitor_response.json().get('items', [])
-                                # Check the latest job for our target device
-                                latest_job = monitor_data[0]
-                                device_list = latest_job.get('deviceList', [])
-                                for device in device_list:
-                                    if device.get("deviceUUID") == primary_status_id:
-                                        device_name = device.get("deviceName")
-                                        deployment_status = device.get("deploymentStatus")
-                                        logger.info(f"Deployment status for {device_name}: {deployment_status}")
-                                        if deployment_status == "SUCCEEDED":
-                                            logger.info(f"Deployment for {device_name} completed successfully.")
-                                            return True
-                                        elif deployment_status == "FAILED":
-                                            logger.error(f"Deployment for {device_name} failed.")
-                                            return False
-                                time.sleep(10)
+                            timeout_counter = 0
+                            max_timeout = 30  # 5 minutes maximum
+                         
+                            while timeout_counter < max_timeout:
+                                try:
+                                    monitor_response = requests.get(monitor_deployments, headers=rest_api_headers, verify=False)
+                                    monitor_response.raise_for_status()
+                                    monitor_data = monitor_response.json().get('items', [])
+
+                                    if not monitor_data:
+                                        logger.warning("No deployment jobs found")
+                                        time.sleep(10)
+                                        timeout_counter += 1
+                                        continue
+                            
+                                    # Check the latest job for our target device
+                                    latest_job = monitor_data[0]
+                                    device_list = latest_job.get('deviceList', [])
+                                    for device in device_list:
+                                        if device.get("deviceUUID") == primary_status_id:
+                                            device_name = device.get("deviceName")
+                                            deployment_status = device.get("deploymentStatus")
+                                            logger.info(f"Deployment status for {device_name}: {deployment_status}")
+                                            if deployment_status == "SUCCEEDED":
+                                                logger.info(f"Deployment for {device_name} completed successfully.")
+                                                return True
+                                            elif deployment_status == "FAILED":
+                                                logger.error(f"Deployment for {device_name} failed.")
+                                                return False
+                                            
+                                    time.sleep(10)
+                                    timeout_counter += 1
+                                except Exception as e:
+                                    logger.error(f"Error while monitoring deployment: {e}")
+                                    time.sleep(10)
+                                    timeout_counter += 1
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")

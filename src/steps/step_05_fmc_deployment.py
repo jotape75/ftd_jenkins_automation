@@ -127,12 +127,12 @@ class Step05_FMC_DEPLOYMENT:
                                         if device.get("deviceUUID") == primary_status_id:
                                             device_name = device.get("deviceName")
                                             deployment_status = device.get("deploymentStatus")
-                                            logger.info(f"Deployment status for {device_name}: {deployment_status}")
+                                            logger.info(f"Deployment status for {device_name}: {deployment_status} - Attempt {timeout_counter + 1}/{max_timeout}")
                                             if deployment_status == "SUCCEEDED":
                                                 logger.info(f"Deployment for {device_name} completed successfully.")
                                                 return True
                                             elif deployment_status == "FAILED":
-                                                logger.error(f"Deployment for {device_name} failed.")
+                                                logger.error(f"Deployment for {device_name} failed. Check FMC for details.")
                                                 return False
                                             
                                     time.sleep(10)

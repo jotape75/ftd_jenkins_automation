@@ -59,28 +59,19 @@ class Step05_FMC_DEPLOYMENT:
             # FMC API endpoints
             fmc_ha_settings_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs"
             fmc_ha_check_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}"
-            url_devices_int = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{primary_status_id}}/physicalinterfaces"
-            fmc_obj_host_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/hosts"
-            fmc_obj_network_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/networks"
-            fmc_routing_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{primary_status_id}}/routing/ipv4staticroutes"
-            ha_monitored_interfaces = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces"
-            ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{matching_interface_id}}"
-            deployable_devices = f'https://192.168.0.201/api/fmc_config/v1/domain/default/deployment/deployabledevices'
-            ha_check_url = f'https://192.168.0.201/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}'
-
+            deployable_devices = f'https://{self.fmc_ip}/api/fmc_config/v1/domain/default/deployment/deployabledevices'
+            deployment_requests = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/deployment/deploymentrequests"
 
             ### GET Deployable devices ###
                 
-            deployable_dev_dict = {}
             response_deployable_devices = requests.get(deployable_devices, headers=rest_api_headers, verify=False)
             response_deployable_devices.raise_for_status()
             deployable_dev_json = response_deployable_devices.json().get('items', [])
             for dev in deployable_dev_json:
                 name = dev.get('name')
-                dev_version = dev.get('version')
                 if name == self.ftd_ha_tmp['ha_payload']['name']:
-                    deployable_dev_dict[dev_version] = name
-                    logger.info("Deployable Devices: %s", deployable_dev_dict)
+                    dev_version = dev.get('version')
+                    logger.info(f"Deployable Devices: %s, {name}: {dev_version}")
                     #GET HA ID
                     response_ha_id = requests.get(fmc_ha_settings_url, headers=rest_api_headers, verify=False)
                     response_ha_id.raise_for_status()
@@ -94,9 +85,23 @@ class Step05_FMC_DEPLOYMENT:
                             response_ha_check.raise_for_status()
                             ha_json = response_ha_check.json()
                             logger.info(f'Active device is {ha_json["metadata"]["primaryStatus"]["device"]["name"]}')
-                            logger.info(response_ha_check.text)
                             primary_status_id = ha_json["metadata"]["primaryStatus"]["device"]["id"]
                             logger.info("Primary Device ID: %s", primary_status_id)
+                            ### Perform Deployment ###
+                            deployment_payload = {
+                                "type": "DeploymentRequest",
+                                "version": dev_version,  # ← This is the key!
+                                "forceDeploy": True,
+                                "ignoreWarning": True,
+                                "deviceList": [primary_status_id],
+                                "deploymentNote": "API deployment with correct version"
+                            }
+                            deployment_response = requests.post(deployment_requests, headers=rest_api_headers, data=json.dumps(deployment_payload), verify=False)
+                            if deployment_response.status_code == 202:
+                                logger.info("Deployment initiated successfully.")
+                            else:
+                                logger.error(f"Deployment initiation failed: {deployment_response.status_code} - {deployment_response.text}")
+                                return False
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")

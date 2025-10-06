@@ -114,7 +114,7 @@ class Step05_FMC_DEPLOYMENT:
                                 device_list = latest_job.get('deviceList', [])
                                 for device in device_list:
                                     if device.get("deviceUUID") == primary_status_id:
-                                        device_name = device.get("name")
+                                        device_name = device.get("deviceName")
                                         deployment_status = device.get("deploymentStatus")
                                         logger.info(f"Deployment status for {device_name}: {deployment_status}")
                                         if deployment_status == "SUCCEEDED":

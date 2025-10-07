@@ -70,41 +70,41 @@ class Step04_FTD_CONF:
            
             ## CREATE SECURITY ZONES ###
 
-            zones_id_list = []
-            template_zone_names = []
-            get_zones = requests.get(fmc_sec_zones_url, headers=rest_api_headers, verify=False)
-            get_zones.raise_for_status()
-            existing_zones = get_zones.json().get('items', [])
-            existing_zone_names = [zone.get('name') for zone in existing_zones]
+        #     zones_id_list = []
+        #     template_zone_names = []
+        #     get_zones = requests.get(fmc_sec_zones_url, headers=rest_api_headers, verify=False)
+        #     get_zones.raise_for_status()
+        #     existing_zones = get_zones.json().get('items', [])
+        #     existing_zone_names = [zone.get('name') for zone in existing_zones]
 
-            for template_zone in self.ftd_sec_zones_tmp["sec_zones_payload"]:
-                zone_name = template_zone.get('name')
-                template_zone_names.append(zone_name)
-                if zone_name  not in existing_zone_names:
-                    response_zones = requests.post(fmc_sec_zones_url, headers=rest_api_headers, data=json.dumps(zone_name), verify=False)
-                    response_zones.raise_for_status()
-                    zones = response_zones.json()
-                    zones_id = zones.get('id')
-                    zones_id_list.append(zones_id)
+        #     for template_zone in self.ftd_sec_zones_tmp["sec_zones_payload"]:
+        #         zone_name = template_zone.get('name')
+        #         template_zone_names.append(zone_name)
+        #         if zone_name  not in existing_zone_names:
+        #             response_zones = requests.post(fmc_sec_zones_url, headers=rest_api_headers, data=json.dumps(zone_name), verify=False)
+        #             response_zones.raise_for_status()
+        #             zones = response_zones.json()
+        #             zones_id = zones.get('id')
+        #             zones_id_list.append(zones_id)
 
-                    if response_zones.status_code in [200, 201]:
-                        logger.info(f"Security zone {zone_name} created successfully.")
-                    else:
-                        logger.info(f"Failed to create security zone {zone_name}. Status code: {response_zones.status_code}")
-                        logger.info(response_zones.text)
-                        return False
-                else:
-                    # Security zone already exists, retrieve its ID
-                    for existing_zone in existing_zones:
-                        if existing_zone.get('name') == zone_name:
-                            zones_id_list.append(existing_zone.get('id'))
-                            logger.info(f"Security zone {zone_name} already exists. Skipping creation.")
-                            break
+        #             if response_zones.status_code in [200, 201]:
+        #                 logger.info(f"Security zone {zone_name} created successfully.")
+        #             else:
+        #                 logger.info(f"Failed to create security zone {zone_name}. Status code: {response_zones.status_code}")
+        #                 logger.info(response_zones.text)
+        #                 return False
+        #         else:
+        #             # Security zone already exists, retrieve its ID
+        #             for existing_zone in existing_zones:
+        #                 if existing_zone.get('name') == zone_name:
+        #                     zones_id_list.append(existing_zone.get('id'))
+        #                     logger.info(f"Security zone {zone_name} already exists. Skipping creation.")
+        #                     break
 
-            time.sleep(5)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error: {e}")
-            return False
+        #     time.sleep(5)
+        # except requests.exceptions.RequestException as e:
+        #     logger.error(f"Error: {e}")
+        #     return False
         
         ### CONFIGURE INTERFACES ###
         # try:

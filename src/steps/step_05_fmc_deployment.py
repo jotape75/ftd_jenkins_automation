@@ -136,7 +136,9 @@ class Step05_FMC_DEPLOYMENT:
                                     logger.error(f"Error while monitoring deployment: {e}")
                                     time.sleep(poll_interval)
                                     timeout_counter += poll_interval
-
+                else:
+                    logger.info(f"No Deployment Pending for Device {name}, skipping.")
+                    continue
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False

@@ -67,6 +67,11 @@ class Step05_FMC_DEPLOYMENT:
             response_deployable_devices = requests.get(deployable_devices, headers=rest_api_headers, verify=False)
             response_deployable_devices.raise_for_status()
             deployable_dev_json = response_deployable_devices.json().get('items', [])
+
+            if not deployable_dev_json:
+                logger.info("No deployable devices found. All devices are up to date.")
+                return True
+            
             for dev in deployable_dev_json:
                 name = dev.get('name')
                 if name == self.ftd_ha_tmp['ha_payload']['name']:
@@ -136,10 +141,7 @@ class Step05_FMC_DEPLOYMENT:
                                     logger.error(f"Error while monitoring deployment: {e}")
                                     time.sleep(poll_interval)
                                     timeout_counter += poll_interval
-                else:
-                    if name not in deployable_dev_json:
-                        logger.info(f"No Deployment Pending for Device {name}, skipping.")
-                        continue
+    
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False

@@ -137,8 +137,9 @@ class Step05_FMC_DEPLOYMENT:
                                     time.sleep(poll_interval)
                                     timeout_counter += poll_interval
                 else:
-                    logger.info(f"No Deployment Pending for Device {name}, skipping.")
-                    continue
+                    if name not in deployable_dev_json:
+                        logger.info(f"No Deployment Pending for Device {name}, skipping.")
+                        continue
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False

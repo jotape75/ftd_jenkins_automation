@@ -67,31 +67,39 @@ class Step04_FTD_CONF:
             fmc_routing_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{primary_status_id}}/routing/ipv4staticroutes"
             ha_monitored_interfaces = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces"
             ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{matching_interface_id}}"
+           
             ## CREATE SECURITY ZONES ###
 
             zones_id_list = []
+            template_zone_names = []
             get_zones = requests.get(fmc_sec_zones_url, headers=rest_api_headers, verify=False)
             get_zones.raise_for_status()
             existing_zones = get_zones.json().get('items', [])
-            for zones in existing_zones:
-                if zones.get('name') not in self.ftd_sec_zones_tmp["sec_zones_payload"]["name"]:
-                    
-                    for zone in self.ftd_sec_zones_tmp["sec_zones_payload"]:
-                        response_zones = requests.post(fmc_sec_zones_url, headers=rest_api_headers, data=json.dumps(zone), verify=False)
-                        response_zones.raise_for_status()
-                        zones = response_zones.json()
-                        zones_id = zones.get('id')
-                        zones_id_list.append(zones_id)
+            existing_zone_names = [zone.get('name') for zone in existing_zones]
 
-                        if response_zones.status_code in [200, 201]:
-                            logger.info(f"Security zone {zone['name']} created successfully.")
-                        else:
-                            logger.info(f"Failed to create security zone {zone['name']}. Status code: {response_zones.status_code}")
-                            logger.info(response_zones.text)
-                            return False
+            for template_zone in self.ftd_sec_zones_tmp["sec_zones_payload"]:
+                zone_name = template_zone.get('name')
+                template_zone_names.append(zone_name)
+                if zone_name  not in existing_zone_names:
+                    response_zones = requests.post(fmc_sec_zones_url, headers=rest_api_headers, data=json.dumps(zone_name), verify=False)
+                    response_zones.raise_for_status()
+                    zones = response_zones.json()
+                    zones_id = zones.get('id')
+                    zones_id_list.append(zones_id)
+
+                    if response_zones.status_code in [200, 201]:
+                        logger.info(f"Security zone {zone_name} created successfully.")
+                    else:
+                        logger.info(f"Failed to create security zone {zone_name}. Status code: {response_zones.status_code}")
+                        logger.info(response_zones.text)
+                        return False
                 else:
-                    zones_id_list.append(zones.get('id'))
-                    logger.info(f"Security zone {zones.get('name')} already exists. Skipping creation.")
+                    # Security zone already exists, retrieve its ID
+                    for existing_zone in existing_zones:
+                        if existing_zone.get('name') == zone_name:
+                            zones_id_list.append(existing_zone.get('id'))
+                            logger.info(f"Security zone {zone_name} already exists. Skipping creation.")
+                            break
 
             time.sleep(5)
         except requests.exceptions.RequestException as e:

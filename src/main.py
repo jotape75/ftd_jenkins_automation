@@ -72,14 +72,14 @@ def main():
             from steps.step_01_api_keys import Step01_APIKeys
             step = Step01_APIKeys()
             success = step.execute()
-        # elif args.step == 'add_dev_fmc':
-        #     from steps.step_02_add_dev_fmc import Step02_ADD_DEV_FMC
-        #     step = Step02_ADD_DEV_FMC()
-        #     success = step.execute()
-        # elif args.step == 'conf_ha':
-        #     from steps.step_03_conf_ha import Step03_HAConfig
-        #     step = Step03_HAConfig()
-        #     success = step.execute()
+        elif args.step == 'add_dev_fmc':
+            from steps.step_02_add_dev_fmc import Step02_ADD_DEV_FMC
+            step = Step02_ADD_DEV_FMC()
+            success = step.execute()
+        elif args.step == 'conf_ha':
+            from steps.step_03_conf_ha import Step03_HAConfig
+            step = Step03_HAConfig()
+            success = step.execute()
         elif args.step == 'ftd_conf':
             from steps.step_04_ftd_conf import Step04_FTD_CONF
             step = Step04_FTD_CONF()

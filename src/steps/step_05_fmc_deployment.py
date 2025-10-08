@@ -151,19 +151,7 @@ class Step05_FMC_DEPLOYMENT:
     def load_devices_templates(self):
         from utils_ftd import FTD_HA_TEMPLATE,FTD_SEC_ZONES_TEMPLATE,FTD_INT_TEMPLATE,FTD_STATIC_ROUTE_TEMPLATE,FTD_HA_STANDBY_TEMPLATE
 
-        with open(FTD_HA_TEMPLATE, 'r') as f0, \
-            open(FTD_SEC_ZONES_TEMPLATE, 'r') as f1, \
-            open(FTD_INT_TEMPLATE, 'r') as f2, \
-            open(FTD_STATIC_ROUTE_TEMPLATE, 'r') as f3, \
-            open(FTD_HA_STANDBY_TEMPLATE, 'r') as f4:
+        with open(FTD_HA_TEMPLATE, 'r') as f0:
             
             self.ftd_ha_tmp = json.load(f0)
             logger.info("Loaded FTD HA template")
-            self.ftd_sec_zones_tmp = json.load(f1)
-            logger.info("Loaded FTD security zones template")
-            self.fmc_int_settings = json.load(f2)
-            logger.info("Loaded FTD interfaces configuration template")
-            self.fmc_route_settings = json.load(f3)
-            logger.info("Loaded FTD static route configuration template")
-            self.fmc_ha_standby_settings = json.load(f4)
-            logger.info("Loaded FTD HA standby IP configuration template")

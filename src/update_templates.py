@@ -198,6 +198,7 @@ class TemplateUpdater:
             # Update all templates
             self.update_devices_template()
             self.update_ftd_ha_payload() 
+            self.update_objects_template()
             self.update_sec_zones_template()
             self.update_interfaces_template()
             self.default_route_template()

@@ -47,7 +47,7 @@ class Step04_FTD_CONF:
         self.ha_id = None
         self.primary_device_id = None
         self.primary_status_id = None
-        
+        self.gw_host_id = None
         # Templates that will be loaded later
         self.ftd_ha_tmp = None
         self.ftd_sec_zones_tmp = None

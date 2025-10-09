@@ -1,9 +1,4 @@
 {
-    "host_object" : {
-        "name": "{GW_OUTSIDE}",
-        "value": "{DEFAULT_ROUTE_GATEWAY}",
-        "type": "host"
-        },
     "static_route_payload" : {
         "type": "IPv4StaticRoute",
         "name": "default_route",

@@ -1,0 +1,7 @@
+{
+    "host_object": {
+        "name": "{GW_OUTSIDE}",
+        "type": "Host",
+        "value": "{DEFAULT_ROUTE_GATEWAY}"
+    }
+}

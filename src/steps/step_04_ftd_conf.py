@@ -75,8 +75,8 @@ class Step04_FTD_CONF:
     def create_objects(self):
         try:
 
-            host_object = self.fmc_route_settings["host_object"]
-            network_object = self.fmc_route_settings["network_object"]
+            host_object = self.fmc_obj_settings["host_object"]
+            # network_object = self.fmc_route_settings["network_object"]
 
             # Create host object:
             response_post = requests.post(self.fmc_obj_host_url, headers=self.rest_api_headers, data=json.dumps(host_object), verify=False)
@@ -342,15 +342,17 @@ class Step04_FTD_CONF:
             FTD_INT_TEMPLATE, \
             FTD_STATIC_ROUTE_TEMPLATE, \
             FTD_HA_STANDBY_TEMPLATE, \
-            FTD_NAT_TEMPLATE
+            FTD_NAT_TEMPLATE, \
+            FTD_OBJECTS_TEMPLATE
 
         with open(FTD_HA_TEMPLATE, 'r') as f0, \
             open(FTD_SEC_ZONES_TEMPLATE, 'r') as f1, \
             open(FTD_INT_TEMPLATE, 'r') as f2, \
             open(FTD_STATIC_ROUTE_TEMPLATE, 'r') as f3, \
             open(FTD_HA_STANDBY_TEMPLATE, 'r') as f4, \
-            open(FTD_NAT_TEMPLATE, 'r') as f5:
-            
+            open(FTD_NAT_TEMPLATE, 'r') as f5, \
+            open(FTD_OBJECTS_TEMPLATE, 'r') as f6:
+
             self.ftd_ha_tmp = json.load(f0)
             logger.info("Loaded FTD HA template")
             self.ftd_sec_zones_tmp = json.load(f1)
@@ -363,3 +365,5 @@ class Step04_FTD_CONF:
             logger.info("Loaded FTD HA standby IP configuration template")
             self.ftd_nat_tmp = json.load(f5)
             logger.info("Loaded FTD NAT configuration template")
+            self.fmc_obj_settings = json.load(f6)
+            logger.info("Loaded FTD Objects configuration template")

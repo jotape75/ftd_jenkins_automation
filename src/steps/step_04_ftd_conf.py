@@ -87,6 +87,9 @@ class Step04_FTD_CONF:
                 self.gw_host_id = obj_creation_re.get('id')
                 logger.info(f"Host object {host_object['name']} created successfully.")
                 logger.info(f"Host object ID: {self.gw_host_id}")
+                for item in network_object:
+                    logger.info(f"Network object {item['name']} created with ID: {item['id']}")
+
             else:
                 logger.info(f"Failed to create host object {host_object['name']}. Status code: {response_post.status_code}")
                 return False

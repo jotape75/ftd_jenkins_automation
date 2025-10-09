@@ -149,6 +149,24 @@ class TemplateUpdater:
             f.write(content)
 
         logger.info("HA standby IP template updated successfully")
+    def update_NAT_template(self):
+
+        """Update NAT template with Jenkins parameters"""
+
+        NAME = f'NAT_Policy_{os.getenv("FW_HOSTNAME_01", "")}_HA'
+        template_file = f"{self.data_dir}/nat.json"
+
+        with open(template_file, 'r') as f:
+            content = f.read()
+
+        # Replace placeholders with Jenkins environment variables
+        content = content.replace('{NAME}', NAME)
+
+        # Write back
+        with open(template_file, 'w') as f:
+            f.write(content)
+
+        logger.info("Updated default route template with Jenkins parameters")
         
     def execute(self):
         """Execute all template updates"""
@@ -166,6 +184,7 @@ class TemplateUpdater:
             self.update_interfaces_template()
             self.default_route_template()
             self.update_ha_standby_template()
+            self.update_NAT_template()
             
             logger.info("All templates updated successfully!")
             return True

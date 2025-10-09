@@ -8,16 +8,19 @@
         {
             "name": "{INSIDE_NET_NAME}",
             "type": "Network",
+            "overridable": false,
             "value": "{INSIDE_NETWORK}"
         },
         {
             "name": "{OUTSIDE_NET_NAME}",
             "type": "Network",
+            "overridable": false,
             "value": "{OUTSIDE_NETWORK}"
         },
         {
             "name": "{DMZ_NET_NAME}",
             "type": "Network",
+            "overridable": false,
             "value": "{DMZ_NETWORK}"
         }
     ]

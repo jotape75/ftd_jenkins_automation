@@ -85,8 +85,8 @@ class Step04_FTD_CONF:
             logger.info(response_post.status_code)
             if response_post.status_code in [200,201]:
                 self.gw_host_id = obj_creation_re.get('id')
-                logger.info(f"Host object {host_object['name']} created successfully.")
-                logger.info(f"Host object ID: {self.gw_host_id}")
+
+                logger.info(f"Host object {host_object['name']} - {host_object['value']} created with ID: {self.gw_host_id}.")
 
             else:
                 logger.info(f"Failed to create host object {host_object['name']}. Status code: {response_post.status_code}")
@@ -97,11 +97,10 @@ class Step04_FTD_CONF:
             net_obj_creation_re = response_post.json()
             logger.info(response_post.status_code)
             if response_post.status_code in [200,201]:
-                logger.info(f"Network objects created successfully.")
                 for item in net_obj_creation_re.get('items', []):
-                    logger.info(f"Network object {item['name']} created with ID: {item['id']}")
+                    logger.info(f"Network object {item['name']} - {item['value']} created with ID: {item['id']}")
             else:
-                logger.info(f"Failed to create network object {network_object['name']}. Status code: {response_post.status_code}")
+                logger.info(f"Failed to create network object {network_object['name']} - {network_object['value']}. Status code: {response_post.status_code}")
                 return False
             return True
         

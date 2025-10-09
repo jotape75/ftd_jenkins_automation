@@ -70,6 +70,7 @@ class Step04_FTD_CONF:
         self.ha_monitored_interfaces = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces"
         self.ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{matching_interface_id}}"
         self.fmc_sec_zones_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/securityzones"
+        self.fmc_nat_policy_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies"
         
     def create_security_zones(self):
 
@@ -286,8 +287,22 @@ class Step04_FTD_CONF:
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False
-        
+    def configure_NAT(self):
+        # Placeholder for NAT configuration method
+        try:
+            nat_policy = self.ftd_nat_tmp["nat_policy"]
 
+            response_nat = requests.post(self.fmc_nat_policy_url, headers=self.rest_api_headers, data=json.dumps(nat_policy), verify=False)
+            if response_nat.status_code in [200, 201]:
+                nat_response = response_nat.json()
+                logger.info(f"NAT policy '{nat_policy['name']}' created successfully.")
+                nat_policy_id = nat_response.get('id')
+                logger.info(f"NAT Policy ID: {nat_policy_id}")
+                return True
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error: {e}")
+            return False
+        
     def execute(self):
         """
         Execute FTD zone, interface and route configuration.
@@ -305,20 +320,27 @@ class Step04_FTD_CONF:
             self.rest_api_headers = pickle.load(f)
 
         self.create_security_zones()
-        self.configure_interfaces()
-        self.create_default_route()
-        self.configure_ha_standby()
-        
+        # self.configure_interfaces()
+        # self.create_default_route()
+        # self.configure_ha_standby()
+        self.configure_NAT()
+
         return True
 
     def load_devices_templates(self):
-        from utils_ftd import FTD_HA_TEMPLATE,FTD_SEC_ZONES_TEMPLATE,FTD_INT_TEMPLATE,FTD_STATIC_ROUTE_TEMPLATE,FTD_HA_STANDBY_TEMPLATE
+        from utils_ftd import FTD_HA_TEMPLATE, \
+            FTD_SEC_ZONES_TEMPLATE, \
+            FTD_INT_TEMPLATE, \
+            FTD_STATIC_ROUTE_TEMPLATE, \
+            FTD_HA_STANDBY_TEMPLATE, \
+            FTD_NAT_TEMPLATE
 
         with open(FTD_HA_TEMPLATE, 'r') as f0, \
             open(FTD_SEC_ZONES_TEMPLATE, 'r') as f1, \
             open(FTD_INT_TEMPLATE, 'r') as f2, \
             open(FTD_STATIC_ROUTE_TEMPLATE, 'r') as f3, \
-            open(FTD_HA_STANDBY_TEMPLATE, 'r') as f4:
+            open(FTD_HA_STANDBY_TEMPLATE, 'r') as f4, \
+            open(FTD_NAT_TEMPLATE, 'r') as f5:
             
             self.ftd_ha_tmp = json.load(f0)
             logger.info("Loaded FTD HA template")
@@ -330,3 +352,5 @@ class Step04_FTD_CONF:
             logger.info("Loaded FTD static route configuration template")
             self.fmc_ha_standby_settings = json.load(f4)
             logger.info("Loaded FTD HA standby IP configuration template")
+            self.ftd_nat_tmp = json.load(f5)
+            logger.info("Loaded FTD NAT configuration template")

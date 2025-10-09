@@ -2,6 +2,6 @@
     "nat_policy": {
         "type": "FTDNatPolicy",
         "name": "{NAME}",
-        "description": "Network Address Translation policy for {NAME} HA pair"
+        "description": "Network Address Translation policy for {HA_NAME} pair"
     }
 }

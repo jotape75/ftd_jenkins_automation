@@ -154,6 +154,7 @@ class TemplateUpdater:
         """Update NAT template with Jenkins parameters"""
 
         NAME = f'NAT_Policy_{os.getenv("FW_HOSTNAME_01", "")}_HA'
+        HA_NAME = f'{os.getenv("FW_HOSTNAME_01", "")}_HA'
         template_file = f"{self.data_dir}/nat.json"
 
         with open(template_file, 'r') as f:
@@ -161,6 +162,7 @@ class TemplateUpdater:
 
         # Replace placeholders with Jenkins environment variables
         content = content.replace('{NAME}', NAME)
+        content = content.replace('{HA_NAME}', HA_NAME)
 
         # Write back
         with open(template_file, 'w') as f:

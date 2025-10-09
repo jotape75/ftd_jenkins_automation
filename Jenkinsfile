@@ -50,6 +50,7 @@ pipeline {
         string(name: 'INSIDE_IP', defaultValue: '192.168.1.1', description: 'Inside Interface IP Address')
         string(name: 'INSIDE_MASK', defaultValue: '255.255.255.0', description: 'Inside Interface Subnet Mask')
         string(name: 'INSIDE_STANDBY_IP', defaultValue: '192.168.1.2', description: 'Inside Interface Standby IP')
+        string(name:'INSIDE_NETWORK', defaultValue: '192.168.1.0/24', description: 'Inside Networks')
 
         // Outside interface configurations
 
@@ -59,6 +60,7 @@ pipeline {
         string(name: 'OUTSIDE_IP', defaultValue: '10.0.0.1', description: 'Outside Interface IP Address')
         string(name: 'OUTSIDE_MASK', defaultValue: '255.255.255.0', description: 'Outside Interface Subnet Mask')
         string(name: 'OUTSIDE_STANDBY_IP', defaultValue: '10.0.0.2', description: 'Outside Interface Standby IP')
+        string(name:'OUTSIDE_NETWORK', defaultValue: '10.0.0.0/24', description: 'Outside Networks')
 
 
         // DMZ interface configurations
@@ -69,6 +71,7 @@ pipeline {
         string(name: 'DMZ_IP', defaultValue: '172.16.1.1', description: 'DMZ Interface IP Address')
         string(name: 'DMZ_STANDBY_IP', defaultValue: '172.16.1.2', description: 'DMZ Interface Standby IP')
         string(name: 'DMZ_MASK', defaultValue: '255.255.255.0', description: 'DMZ Interface Subnet Mask')
+        string(name:'DMZ_NETWORK', defaultValue: '172.16.1.0/24', description: 'DMZ Networks')
 
         // Default route
         string(name: 'DEFAULT_ROUTE_GATEWAY', defaultValue: '10.10.10.1', description: 'Default Route Gateway')
@@ -114,6 +117,7 @@ pipeline {
                     env.INSIDE_IP = params.INSIDE_IP
                     env.INSIDE_MASK = params.INSIDE_MASK
                     env.INSIDE_STANDBY_IP = params.INSIDE_STANDBY_IP
+                    env.INSIDE_NETWORK = params.INSIDE_NETWORK
 
                     env.OUTSIDE_INTERFACE = params.OUTSIDE_INTERFACE
                     env.OUTSIDE_INTERFACE_NAME = params.OUTSIDE_INTERFACE_NAME
@@ -121,6 +125,7 @@ pipeline {
                     env.OUTSIDE_IP = params.OUTSIDE_IP
                     env.OUTSIDE_MASK = params.OUTSIDE_MASK
                     env.OUTSIDE_STANDBY_IP = params.OUTSIDE_STANDBY_IP
+                    
 
                     env.DMZ_INTERFACE = params.DMZ_INTERFACE
                     env.DMZ_INTERFACE_NAME = params.DMZ_INTERFACE_NAME
@@ -128,6 +133,7 @@ pipeline {
                     env.DMZ_IP = params.DMZ_IP
                     env.DMZ_MASK = params.DMZ_MASK
                     env.DMZ_STANDBY_IP = params.DMZ_STANDBY_IP
+                    env.DMZ_NETWORK = params.DMZ_NETWORK
                     
 
                     // Default route

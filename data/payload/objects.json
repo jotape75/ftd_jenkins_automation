@@ -3,5 +3,23 @@
         "name": "{GW_OUTSIDE}",
         "type": "Host",
         "value": "{DEFAULT_ROUTE_GATEWAY}"
-    }
+    },
+    "network_object": [
+        {
+            "name": "{INSIDE_NET_NAME}",
+            "type": "Network",
+            "value": "{INSIDE_NETWORK}"
+        },
+        {
+            "name": "{OUTSIDE_NET_NAME}",
+            "type": "Network",
+            "value": "{OUTSIDE_NETWORK}"
+        },
+        {
+            "name": "{DMZ_NET_NAME}",
+            "type": "Network",
+            "value": "{DMZ_NETWORK}"
+        }
+    ]
 }
+     

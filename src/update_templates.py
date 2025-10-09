@@ -71,6 +71,9 @@ class TemplateUpdater:
     def update_objects_template(self):
         """Update default route template with Jenkins parameters"""
         GW_OUTSIDE = f'{os.getenv("FW_HOSTNAME_01", "")}_HA_outside_gw'
+        INSIDE_NET_NAME = f'INSIDE_NET{os.getenv("FW_HOSTNAME_01", "")}_HA'
+        OUTSIDE_NET_NAME = f'OUTSIDE_NET{os.getenv("FW_HOSTNAME_01", "")}_HA'
+        DMZ_NET_NAME = f'DMZ_NET{os.getenv("FW_HOSTNAME_01", "")}_HA'
         template_file = f"{self.data_dir}/objects.json"
 
         with open(template_file, 'r') as f:
@@ -79,12 +82,18 @@ class TemplateUpdater:
         # Replace placeholders with Jenkins environment variables
         content = content.replace('{DEFAULT_ROUTE_GATEWAY}', os.getenv('DEFAULT_ROUTE_GATEWAY', ''))
         content = content.replace('{GW_OUTSIDE}', GW_OUTSIDE)
+        content = content.replace('{INSIDE_NETWORK}', os.getenv('INSIDE_NETWORK', ''))
+        content = content.replace('{INSIDE_NET_NAME}', INSIDE_NET_NAME)
+        content = content.replace('{OUTSIDE_NETWORK}', os.getenv('OUTSIDE_NETWORK', ''))
+        content = content.replace('{OUTSIDE_NET_NAME}', OUTSIDE_NET_NAME)
+        content = content.replace('{DMZ_NETWORK}', os.getenv('DMZ_NETWORK', ''))
+        content = content.replace('{DMZ_NET_NAME}', DMZ_NET_NAME)
 
         # Write back
         with open(template_file, 'w') as f:
             f.write(content)
 
-        logger.info("Updated default route template with Jenkins parameters")
+        logger.info("Updated objects template with Jenkins parameters")
     
     def update_sec_zones_template(self):
         """Update security zones template with Jenkins parameters"""
@@ -184,7 +193,7 @@ class TemplateUpdater:
         with open(template_file, 'w') as f:
             f.write(content)
 
-        logger.info("Updated default route template with Jenkins parameters")
+        logger.info("Updated NAT template with Jenkins parameters")
         
     def execute(self):
         """Execute all template updates"""

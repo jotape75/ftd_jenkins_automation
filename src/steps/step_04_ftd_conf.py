@@ -71,7 +71,29 @@ class Step04_FTD_CONF:
         self.ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{matching_interface_id}}"
         self.fmc_sec_zones_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/securityzones"
         self.fmc_nat_policy_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies"
-        
+    
+    def create_objects(self):
+        try:
+
+            host_object = self.fmc_route_settings["host_object"]
+            network_object = self.fmc_route_settings["network_object"]
+
+            # Create host object:
+            response_post = requests.post(self.fmc_obj_host_url, headers=self.rest_api_headers, data=json.dumps(host_object), verify=False)
+            obj_creation_re = response_post.json()
+            logger.info(response_post.status_code)
+            if response_post.status_code in [200,201]:
+                self.gw_host_id = obj_creation_re.get('id')
+                logger.info(f"Host object {host_object['name']} created successfully.")
+                logger.info(f"Host object ID: {self.gw_host_id}")
+                return True
+            else:
+                logger.info(f"Failed to create host object {host_object['name']}. Status code: {response_post.status_code}")
+                return False
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error: {e}")
+            return False    
+  
     def create_security_zones(self):
 
          # CREATE SECURITY ZONES ###
@@ -203,23 +225,10 @@ class Step04_FTD_CONF:
        ## CREATE DEFAULT ROUTE ###
 
         try:
-            host_object = self.fmc_route_settings["host_object"]
             static_route_payload = self.fmc_route_settings["static_route_payload"]
 
-            # Create network object:
-            response_post = requests.post(self.fmc_obj_host_url, headers=self.rest_api_headers, data=json.dumps(host_object), verify=False)
-            obj_creation_re = response_post.json()
-            logger.info(response_post.status_code)
-            if response_post.status_code in [200,201]:
-                gw_host_id = obj_creation_re.get('id')
-                static_route_payload["gateway"]["object"]["id"] = gw_host_id
-                logger.info(f"Host object {host_object['name']} created successfully.")
-                logger.info(f"Host object ID: {gw_host_id}")
-            else:
-                logger.info(f"Failed to create host object {host_object['name']}. Status code: {response_post.status_code}")
-                return False
-
             # Get any IPv4 object ID
+            static_route_payload["gateway"]["object"]["id"] = self.gw_host_id
             response_get = requests.get(self.fmc_obj_network_url, headers=self.rest_api_headers, verify=False)
             response_get.raise_for_status()
             obj_networks_all = response_get.json().get('items', [])
@@ -318,12 +327,12 @@ class Step04_FTD_CONF:
 
         with open('api_keys_data.pkl', 'rb') as f:
             self.rest_api_headers = pickle.load(f)
-
-        self.create_security_zones()
+        self.create_objects()
+        # self.create_security_zones()
         # self.configure_interfaces()
-        # self.create_default_route()
+        self.create_default_route()
         # self.configure_ha_standby()
-        self.configure_NAT()
+        # self.configure_NAT()
 
         return True
 

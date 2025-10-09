@@ -67,6 +67,24 @@ class TemplateUpdater:
             f.write(content)
 
         logger.info("Updated ftd_ha_payload with Jenkins parameters")
+
+    def update_objects_template(self):
+        """Update default route template with Jenkins parameters"""
+        GW_OUTSIDE = f'{os.getenv("FW_HOSTNAME_01", "")}_HA_outside_gw'
+        template_file = f"{self.data_dir}/objects.json"
+
+        with open(template_file, 'r') as f:
+            content = f.read()
+
+        # Replace placeholders with Jenkins environment variables
+        content = content.replace('{DEFAULT_ROUTE_GATEWAY}', os.getenv('DEFAULT_ROUTE_GATEWAY', ''))
+        content = content.replace('{GW_OUTSIDE}', GW_OUTSIDE)
+
+        # Write back
+        with open(template_file, 'w') as f:
+            f.write(content)
+
+        logger.info("Updated default route template with Jenkins parameters")
     
     def update_sec_zones_template(self):
         """Update security zones template with Jenkins parameters"""
@@ -120,9 +138,7 @@ class TemplateUpdater:
             content = f.read()
 
         # Replace placeholders with Jenkins environment variables
-        content = content.replace('{DEFAULT_ROUTE_GATEWAY}', os.getenv('DEFAULT_ROUTE_GATEWAY', ''))
         content = content.replace('{OUTSIDE_INTERFACE_NAME}', os.getenv('OUTSIDE_INTERFACE_NAME', ''))
-        content = content.replace('{GW_OUTSIDE}', GW_OUTSIDE)
 
         # Write back
         with open(template_file, 'w') as f:

@@ -71,9 +71,9 @@ class TemplateUpdater:
     def update_objects_template(self):
         """Update default route template with Jenkins parameters"""
         GW_OUTSIDE = f'{os.getenv("FW_HOSTNAME_01", "")}_HA_outside_gw'
-        INSIDE_NET_NAME = f'INSIDE_NET{os.getenv("FW_HOSTNAME_01", "")}_HA'
-        OUTSIDE_NET_NAME = f'OUTSIDE_NET{os.getenv("FW_HOSTNAME_01", "")}_HA'
-        DMZ_NET_NAME = f'DMZ_NET{os.getenv("FW_HOSTNAME_01", "")}_HA'
+        INSIDE_NET_NAME = f'INSIDE_NET_{os.getenv("FW_HOSTNAME_01", "")}_HA'
+        OUTSIDE_NET_NAME = f'OUTSIDE_NET_{os.getenv("FW_HOSTNAME_01", "")}_HA'
+        DMZ_NET_NAME = f'DMZ_NET_{os.getenv("FW_HOSTNAME_01", "")}_HA'
         template_file = f"{self.data_dir}/objects.json"
 
         with open(template_file, 'r') as f:

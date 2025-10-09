@@ -125,6 +125,7 @@ pipeline {
                     env.OUTSIDE_IP = params.OUTSIDE_IP
                     env.OUTSIDE_MASK = params.OUTSIDE_MASK
                     env.OUTSIDE_STANDBY_IP = params.OUTSIDE_STANDBY_IP
+                    env.OUTSIDE_NETWORK = params.OUTSIDE_NETWORK
                     
 
                     env.DMZ_INTERFACE = params.DMZ_INTERFACE

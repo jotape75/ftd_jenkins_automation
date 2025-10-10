@@ -377,7 +377,7 @@ class Step04_FTD_CONF:
             self.rest_api_headers = pickle.load(f)
         
         self.create_objects()
-        # self.create_security_zones()
+        self.create_security_zones()
         # self.configure_interfaces()
         # self.create_default_route()
         # self.configure_ha_standby()

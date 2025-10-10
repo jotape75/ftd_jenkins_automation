@@ -85,7 +85,7 @@ def main():
             step = Step04_FTD_CONF()
             success = step.execute()  
         elif args.step == 'fmc_deployment':
-            from steps.step_05_fmc_deployment import Step05_FMC_DEPLOYMENT
+            from projects.ftd_jenkins_automation.src.steps.step_06_email_report import Step05_FMC_DEPLOYMENT
             step = Step05_FMC_DEPLOYMENT()
             success = step.execute()
         else:

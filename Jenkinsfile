@@ -26,8 +26,12 @@
 
 pipeline {
     agent any
-    
+    environment {
+        GMAIL_USERNAME = credentials('gmail-username')
+        GMAIL_APP_PASSWORD = credentials('gmail-app-password')
+    }
     parameters {
+        string(name: 'EMAIL_REPORT_DESTINATION', defaultValue: '', description: 'Add email to receive the report')
         // FMC parameters
         string(name: 'FMC_IP', defaultValue: '192.168.0.201', description: 'FMC IP Address')
         string(name: 'FMC_USERNAME', defaultValue: 'api_user', description: 'FMC Username')
@@ -97,6 +101,7 @@ pipeline {
                     echo "Setting environment variables and updating templates..."
                     
                     // FMC and FTD parameters
+                    env.EMAIL_REPORT_DESTINATION = params.EMAIL_REPORT_DESTINATION
                     env.FMC_IP = params.FMC_IP
                     env.FMC_USERNAME = params.FMC_USERNAME
                     env.FMC_PASSWORD = params.FMC_PASSWORD
@@ -179,6 +184,12 @@ pipeline {
                 sh 'python3 src/main.py --step fmc_deployment'
             }
         }
+        stage('SEND DEPLOYMENT EMAIL REPORT') {
+            steps {
+                sh 'python3 src/main.py --step email_report'
+            }
+        }
+
     }
     
     post {

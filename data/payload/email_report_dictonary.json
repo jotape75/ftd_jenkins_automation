@@ -1,0 +1,24 @@
+{
+    "deployment_info": {
+        "ha_pair_name": "",
+        "fmc_ip": "",
+        "primary_device": "",
+        "timestamp": "",
+        "build_number": "",
+        "inside_ip": "",           
+        "outside_ip": "",         
+        "dmz_ip": "",              
+        "jenkins_job": "",         
+        "deployment_status": "in_progress"  
+    },
+    "network_objects": [],
+    "security_zones": [],
+    "nat_policy": {},
+    "nat_rules": [],
+    "interfaces_configured": [],
+    "static_routes": [],
+    "ha_configuration": {},     
+    "warnings": [],            
+    "errors": [],
+    "success_steps": []
+}

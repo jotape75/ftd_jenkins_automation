@@ -42,4 +42,5 @@ FTD_HA_STANDBY_TEMPLATE = f"{get_project_root()}/data/payload/ha_standby_ip.json
 FTD_NAT_TEMPLATE = f"{get_project_root()}/data/payload/nat.json"
 FTD_OBJECTS_TEMPLATE = f"{get_project_root()}/data/payload/objects.json"
 FTD_POLICY_ASSIGNMENT_TEMPLATE = f"{get_project_root()}/data/payload/policy_assignment.json"
+EMAIL_REPORT_DATA_FILE = f"{get_project_root()}/data/payload/email_report_dictionary.json"
 

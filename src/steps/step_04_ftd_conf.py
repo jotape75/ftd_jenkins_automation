@@ -76,11 +76,20 @@ class Step04_FTD_CONF:
         self.fmc_nat_policy_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies"
         self.fmc_nat_rule_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies/{{nat_policy_id}}/autonatrules"
         self.fmc_policy_assignment_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/assignment/policyassignments"
+    
+    def save_report_data_file(self):
+        from utils_ftd import EMAIL_REPORT_DATA_FILE
+
+         # Save email report data dictionary to JSON file
+        with open(EMAIL_REPORT_DATA_FILE, 'w') as f:
+            json.dump(self.email_report_data, f, indent=4)
+
     def create_objects(self):
         try:
 
             host_object = self.fmc_obj_settings["host_object"]
             network_object = self.fmc_obj_settings["network_object"]
+            report_data = self.email_report_data["network_objects"]
     
             # Create host object:
             response_post = requests.post(self.fmc_obj_host_url, headers=self.rest_api_headers, data=json.dumps(host_object), verify=False)
@@ -88,7 +97,13 @@ class Step04_FTD_CONF:
             logger.info(response_post.status_code)
             if response_post.status_code in [200,201]:
                 self.gw_host_id = obj_creation_re.get('id')
-
+                report_data.append({
+                        "name": host_object['name'],
+                        "IP": host_object['value'],
+                        "type": "Host", 
+                        "id": self.gw_host_id
+                })
+                    
                 logger.info(f"Host object {host_object['name']} - {host_object['value']} created with ID: {self.gw_host_id}.")
 
             else:
@@ -102,9 +117,17 @@ class Step04_FTD_CONF:
                 for item in net_obj_creation_re.get('items', []):
                     self.network_objects_id[item['name']] = item['id']
                     logger.info(f"Network object {item['name']} - {item['value']} created with ID: {item['id']}")
+                    report_data.append({
+                        "name": item['name'],
+                        "IP": item['value'],
+                        "type": "Network",
+                        "id": item['id']
+                    })
             else:
                 logger.info(f"Failed to create network object {network_object['name']} - {network_object['value']}. Status code: {response_post.status_code}")
                 return False
+            self.save_report_data_file()
+            logger.info("Email report data file updated with host and network objects.")
             return True
         
         except requests.exceptions.RequestException as e:
@@ -393,11 +416,11 @@ class Step04_FTD_CONF:
             self.rest_api_headers = pickle.load(f)
         
         self.create_objects()
-        self.create_security_zones()
+        # self.create_security_zones()
         # self.configure_interfaces()
         # self.create_default_route()
         # self.configure_ha_standby()
-        self.configure_NAT()
+        # self.configure_NAT()
 
         return True
 
@@ -409,7 +432,8 @@ class Step04_FTD_CONF:
             FTD_HA_STANDBY_TEMPLATE, \
             FTD_NAT_TEMPLATE, \
             FTD_OBJECTS_TEMPLATE, \
-            FTD_POLICY_ASSIGNMENT_TEMPLATE
+            FTD_POLICY_ASSIGNMENT_TEMPLATE, \
+            EMAIL_REPORT_DATA_FILE
 
         with open(FTD_HA_TEMPLATE, 'r') as f0, \
             open(FTD_SEC_ZONES_TEMPLATE, 'r') as f1, \
@@ -418,8 +442,8 @@ class Step04_FTD_CONF:
             open(FTD_HA_STANDBY_TEMPLATE, 'r') as f4, \
             open(FTD_NAT_TEMPLATE, 'r') as f5, \
             open(FTD_OBJECTS_TEMPLATE, 'r') as f6, \
-            open(FTD_POLICY_ASSIGNMENT_TEMPLATE, 'r') as f7:
-
+            open(FTD_POLICY_ASSIGNMENT_TEMPLATE, 'r') as f7, \
+            open(EMAIL_REPORT_DATA_FILE, 'r') as f8:
 
             self.ftd_ha_tmp = json.load(f0)
             logger.info("Loaded FTD HA template")
@@ -437,3 +461,5 @@ class Step04_FTD_CONF:
             logger.info("Loaded FTD Objects configuration template")
             self.fmc_policy_assignment = json.load(f7)
             logger.info("Loaded FTD Policy Assignment configuration template")
+            self.email_report_data = json.load(f8)
+            logger.info("Loaded email report data dictionary")

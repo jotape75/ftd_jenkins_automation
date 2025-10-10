@@ -14,16 +14,13 @@ Key Features:
 """
 
 import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import requests
 import logging
-import pickle
 import json
 import sys
 import os
-import time
-
 # Add the src directory to the Python path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -123,14 +120,14 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 return False
 
             # Create message
-            msg = MimeMultipart()
+            msg = MIMEMultipart()
             msg['From'] = sender_email
             msg['To'] = recipient_email
             msg['Subject'] = f"FTD Configuration Report - {os.getenv('FW_HOSTNAME_01', 'Unknown')}_HA"
 
             # Email body with configuration summary
             body = self._generate_report_body()
-            msg.attach(MimeText(body, 'html'))
+            msg.attach(MIMEText(body, 'html'))
 
             # Send email
             server = smtplib.SMTP(smtp_server, smtp_port)

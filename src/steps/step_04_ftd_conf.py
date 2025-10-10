@@ -75,7 +75,7 @@ class Step04_FTD_CONF:
         self.fmc_sec_zones_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/securityzones"
         self.fmc_nat_policy_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies"
         self.fmc_nat_rule_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies/{{nat_policy_id}}/autonatrules"
-    
+        self.fmc_policy_assignment_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/policyassignments"
     def create_objects(self):
         try:
 
@@ -326,7 +326,8 @@ class Step04_FTD_CONF:
             response_nat.raise_for_status()
             if response_nat.status_code in [200, 201]:
                 nat_response = response_nat.json()
-                logger.info(f"NAT policy '{nat_policy['name']}' created successfully.")
+                nat_policy_name = nat_response.get('name')
+                logger.info(f"NAT policy '{nat_policy_name}' created successfully.")
                 nat_policy_id = nat_response.get('id')
                 logger.info(f"NAT Policy ID: {nat_policy_id}")
             
@@ -349,7 +350,22 @@ class Step04_FTD_CONF:
                     nat_rule_response = response_nat_rule.json()
                     nat_rule_id = nat_rule_response.get('id')
                     logger.info(f"NAT rule created successfully - ID: {nat_rule_id}")
-                    return True
+                    dev_id ="75bbe1f6-a469-11f0-8c2e-c61e777f4f0a" #temporary, to be removed
+                    nat_policy_assignment = self.fmc_policy_assignment["nat_policy_assignment"]
+                    nat_policy_assignment["policy"]["name"] = nat_policy_name
+                    nat_policy_assignment["policy"]["id"] = nat_policy_id
+                    nat_policy_assignment["targets"][0]["name"] = self.ftd_ha_tmp['ha_payload']['name']
+                    #nat_policy_assignment["targets"][0]["id"] = self.primary_status_id
+                    nat_policy_assignment["targets"][0]["id"] = dev_id #temporary, to be removed
+                    response_policy_assignment = requests.post(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(nat_policy_assignment), verify=False)
+                    response_policy_assignment.raise_for_status()
+                    if response_policy_assignment.status_code in [200, 201]:
+                        logger.info(f"NAT policy '{nat_policy_name}' assigned to device {self.ftd_ha_tmp['ha_payload']['name']} successfully.")
+                        return True
+                    else:
+                        logger.error(f"Failed to assign NAT policy. Status: {response_policy_assignment.status_code}")
+                        logger.error(response_policy_assignment.text)
+                        return False
                 else:
                     logger.error(f"Failed to create NAT rule. Status: {response_nat_rule.status_code}")
                     return False
@@ -392,7 +408,8 @@ class Step04_FTD_CONF:
             FTD_STATIC_ROUTE_TEMPLATE, \
             FTD_HA_STANDBY_TEMPLATE, \
             FTD_NAT_TEMPLATE, \
-            FTD_OBJECTS_TEMPLATE
+            FTD_OBJECTS_TEMPLATE, \
+            FTD_POLICY_ASSIGNMENT_TEMPLATE
 
         with open(FTD_HA_TEMPLATE, 'r') as f0, \
             open(FTD_SEC_ZONES_TEMPLATE, 'r') as f1, \
@@ -400,7 +417,9 @@ class Step04_FTD_CONF:
             open(FTD_STATIC_ROUTE_TEMPLATE, 'r') as f3, \
             open(FTD_HA_STANDBY_TEMPLATE, 'r') as f4, \
             open(FTD_NAT_TEMPLATE, 'r') as f5, \
-            open(FTD_OBJECTS_TEMPLATE, 'r') as f6:
+            open(FTD_OBJECTS_TEMPLATE, 'r') as f6, \
+            open(FTD_POLICY_ASSIGNMENT_TEMPLATE, 'r') as f7:
+
 
             self.ftd_ha_tmp = json.load(f0)
             logger.info("Loaded FTD HA template")
@@ -416,3 +435,5 @@ class Step04_FTD_CONF:
             logger.info("Loaded FTD NAT configuration template")
             self.fmc_obj_settings = json.load(f6)
             logger.info("Loaded FTD Objects configuration template")
+            self.fmc_policy_assignment = json.load(f7)
+            logger.info("Loaded FTD Policy Assignment configuration template")

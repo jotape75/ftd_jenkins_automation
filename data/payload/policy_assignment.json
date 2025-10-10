@@ -1,0 +1,17 @@
+{
+    "nat_policy_assignment": {
+        "type": "PolicyAssignment",
+        "policy": {
+            "type": "FTDNatPolicy",
+            "name": "NAT_POLICY_NAME_PLACEHOLDER",
+            "id": "NAT_POLICY_ID_PLACEHOLDER"
+        },
+        "targets": [
+            {
+                "id": "FTD_DEVICE_ID_PLACEHOLDER",
+                "type": "Device",
+                "name": "FTD_DEVICE_NAME_PLACEHOLDER"
+            }
+        ]
+    }
+}

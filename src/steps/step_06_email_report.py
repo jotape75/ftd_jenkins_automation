@@ -45,6 +45,8 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         """
         network_objects = self.email_report_data.get("network_objects", [])
         security_zones = self.email_report_data.get("security_zones", [])
+        interfaces_configured = self.email_report_data.get("interfaces_configured", [])
+        static_routes = self.email_report_data.get("static_routes", [])
 
         # Generate table for ALL network objects
         network_table = ""
@@ -65,9 +67,34 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{zone.get('name', 'N/A')}</td>
                 <td>{zone.get('type', 'N/A')}</td>
                 <td>{zone.get('id', 'N/A')}</td>
+                <td>{zone.get('status', 'N/A')}</td>
             </tr>
             """
-        
+        # Generate table for ALL interfaces
+        interfaces_table = ""
+        for intf in interfaces_configured:
+            interfaces_table += f"""
+            <tr>
+            <td>{intf.get('ifname', intf.get('interface_name', 'N/A'))}</td>
+            <td>{intf.get('ip_address', 'N/A')}</td>
+            <td>{intf.get('netmask', 'N/A')}</td>
+            <td>{intf.get('standby_ip', 'N/A')}</td>
+            <td>{intf.get('id', 'N/A')}</td>
+            </tr>
+            """
+        # Generate table for ALL static routes
+        routes_table = ""
+        for route in static_routes:
+            routes_table += f"""
+            <tr>
+                <td>{route.get('name', 'N/A')}</td>
+                <td>{route.get('source', 'N/A')}</td>
+                <td>{route.get('next_hop', 'N/A')}</td>
+                <td>{route.get('type', 'N/A')}</td>
+                <td>{route.get('id', 'N/A')}</td>
+            </tr>
+            """
+
         # Get basic deployment info
         ha_name = os.getenv('FW_HOSTNAME_01', 'Unknown') + '_HA'
         fmc_ip = os.getenv('FMC_IP', 'N/A')
@@ -87,6 +114,8 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <tr><td><strong>FMC IP:</strong></td><td>{fmc_ip}</td></tr>
                 <tr><td><strong>Total Network Objects:</strong></td><td>{len(network_objects)}</td></tr>
                 <tr><td><strong>Total Security Zones:</strong></td><td>{len(security_zones)}</td></tr>
+                <tr><td><strong>Total Interfaces Configured:</strong></td><td>{len(interfaces_configured)}</td></tr>
+                <tr><td><strong>Total Static Routes:</strong></td><td>{len(static_routes)}</td></tr>
             </table>
             
             <h3 style="color: #4682B4;">Network Objects Created:</h3>
@@ -109,11 +138,38 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 </tr>
                 {security_zone_table}
             </table>
+            <h3 style="color: #4682B4;">Interfaces Configured:</h3>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background-color: #f0f0f0;">
+                    <th>Interface Name</th>
+                    <th>IP Address</th>
+                    <th>Subnet Mask</th>
+                    <th>Standby IP</th>
+                    <th>Security Zone</th>
+                    <th>Interface ID</th>
+                </tr>
+                {interfaces_table}
+            </table>
+            <h3 style="color: #4682B4;">Static Routes Created:</h3>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background-color: #f0f0f0;">
+                    <th>Route Name</th>
+                    <th>Source</th>
+                    <th>Next Hop</th>
+                    <th>Type</th>
+                    <th>Route ID</th>
+                </tr>
+                {routes_table}
+            </table>
+
 
             <h3 style="color: #4682B4;">Configuration Steps:</h3>
             <ul>
                 <li>Network Objects Created ({len(network_objects)} total)</li>
                 <li>Security Zones Created ({len(security_zones)} total)</li>
+                <li>Interfaces Configured ({len(interfaces_configured)} total)</li>
+                <li>Static Routes Created ({len(static_routes)} total)</li>
+                <li>Default Route Created</li>
                 <li>NAT Policy Applied</li>
             </ul>
             
@@ -174,6 +230,8 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
             logger.info("Starting email report generation...")
             logger.info(f"Found {len(self.email_report_data.get('network_objects', []))} network objects in report")
             logger.info(f"Found {len(self.email_report_data.get('security_zones', []))} security zones in report")
+            logger.info(f"Found {len(self.email_report_data.get('interfaces_configured', []))} interfaces in report")
+            logger.info(f"Found {len(self.email_report_data.get('static_routes', []))} static routes in report")
             
             
             if self.send_email_report():
@@ -196,7 +254,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 logger.info("Loaded email report data dictionary")
         except FileNotFoundError:
             logger.warning("Email report data file not found, using empty data")
-            self.email_report_data = {"network_objects": [], "security_zones": []}
+            self.email_report_data = {"network_objects": [], "security_zones": [], "interfaces_configured": [], "static_routes": []}
         except Exception as e:
             logger.error(f"Error loading email report data: {e}")
-            self.email_report_data = {"network_objects": [], "security_zones": []}
+            self.email_report_data = {"network_objects": [], "security_zones": [], "interfaces_configured": [], "static_routes": []}

@@ -89,8 +89,8 @@ class Step04_FTD_CONF:
 
             host_object = self.fmc_obj_settings["host_object"]
             network_object = self.fmc_obj_settings["network_object"]
-            report_data = self.email_report_data["network_objects"]
-    
+            report_data = self.email_report_data.get("network_objects", [])
+
             # Create host object:
             response_post = requests.post(self.fmc_obj_host_url, headers=self.rest_api_headers, data=json.dumps(host_object), verify=False)
             obj_creation_re = response_post.json()
@@ -137,7 +137,7 @@ class Step04_FTD_CONF:
     def create_security_zones(self):
 
          # CREATE SECURITY ZONES ###
-        report_data = self.email_report_data["security_zones"]
+        report_data = self.email_report_data.get("security_zones", [])
 
         try:
             self.zones_id_list = []
@@ -160,7 +160,8 @@ class Step04_FTD_CONF:
                         report_data.append({
                         "name": zones.get('name'),
                         "type": "Security Zone",
-                        "id": zones.get('id')
+                        "id": zones.get('id'),
+                        "status": "created"
                     })
                     else:
                         logger.info(f"Failed to create security zone {zone_name}. Status code: {response_zones.status_code}")
@@ -176,7 +177,8 @@ class Step04_FTD_CONF:
                             report_data.append({
                                "name": existing_zone.get('name'),
                                "type": "Security Zone",
-                               "id": existing_zone.get('id')
+                               "id": existing_zone.get('id'),
+                               "status": "Already existed"
                             })
                             break
             self.save_report_data_file()
@@ -189,6 +191,7 @@ class Step04_FTD_CONF:
     def configure_interfaces(self):
 
      ### CONFIGURE INTERFACES ###
+        interfaces_configured = self.email_report_data.get("interfaces_configured", [])
         try:
         # Get the HA primary device ID
             def configure_interface(
@@ -227,6 +230,12 @@ class Step04_FTD_CONF:
                 if response_put.status_code in [200, 201]:
                     logger.info(f"Security zone assigned to interface {interface_name} on device {primary_name} successfully.")
                     logger.info(f'IP address assigned to interface {interface_name} on device {primary_name} successfully.')
+                    interfaces_configured.append({
+                        "ifname": config["ifname"],
+                        "ip_address": config["ip_address"],
+                        "netmask": config["netmask"],
+                        "id": interface_id
+                    })
                 else:
                     logger.info(f"Failed to assign security zone to interface {interface_name} on device {primary_name}. Status code: {response_put.status_code}")
                     logger.info(response_put.text)
@@ -264,6 +273,7 @@ class Step04_FTD_CONF:
                         primary_name=primary_name,
                         headers=self.rest_api_headers
                     )
+            self.save_report_data_file()
             time.sleep(15)
             
             # Return True after all interfaces are processed
@@ -277,7 +287,7 @@ class Step04_FTD_CONF:
     def create_default_route(self):
 
        ## CREATE DEFAULT ROUTE ###
-
+        static_routes = self.email_report_data.get("static_routes", [])
         try:
             static_route_payload = self.fmc_route_settings["static_route_payload"]
 
@@ -286,11 +296,14 @@ class Step04_FTD_CONF:
             response_get = requests.get(self.fmc_obj_network_url, headers=self.rest_api_headers, verify=False)
             response_get.raise_for_status()
             obj_networks_all = response_get.json().get('items', [])
-
+            
+            any_ipv4_id = None
+            any_ipv4_name = None
             for obj in obj_networks_all:
                 if obj['name'] == 'any-ipv4':
                     any_ipv4_id = obj['id']
-
+                    any_ipv4_name = obj['name']
+                    break
             static_route_payload["selectedNetworks"][0]["id"] = any_ipv4_id
             # Create route
             response_route = requests.post(self.fmc_routing_url.format(primary_status_id=self.primary_status_id), headers=self.rest_api_headers, data=json.dumps(static_route_payload), verify=False)
@@ -299,6 +312,15 @@ class Step04_FTD_CONF:
                 route_response = response_route.json()
                 logger.info(f"Static route '{static_route_payload['name']}' created successfully.")
                 logger.info(f"Route ID: {route_response.get('id')}")
+                static_routes.append({
+                    "name": route_response.get('name'),
+                    "source": any_ipv4_name,
+                    "next_hop": static_route_payload['gateway']['object']['name'],
+                    "type": "Static Route",
+                    "id": route_response.get('id')
+                })
+                self.save_report_data_file()
+                logger.info("Email report data file updated with static route.")
                 return True
             else:
                 logger.info(f"Failed to create static route. Status code: {response_route.status_code}")
@@ -308,6 +330,8 @@ class Step04_FTD_CONF:
             return False
         
     def configure_ha_standby(self):
+
+        interfaces_configured = self.email_report_data.get("interfaces_configured", [])
         try:
             # Configured Standby IP for HA
             time.sleep(5)
@@ -339,12 +363,18 @@ class Step04_FTD_CONF:
                                 response_put = requests.put(self.ha_monitored_interfaces_detail.format(ha_id=self.ha_id, matching_interface_id=interface_id), headers=self.rest_api_headers, data=json.dumps(ha_monitored_int_detail_json), verify=False)
                                 if response_put.status_code in [200, 201]:
                                     logger.info(f'Standby IP {standby_ip} configured successfully for interface {int_name}')
+                                    for interface in interfaces_configured:
+                                        if interface['ifname'] == int_name:
+                                            interface['standby_ip'] = standby_ip
+                                            break
                                 else:
                                     logger.error(f' Failed to configure standby IP for {standby_ip}. Status: {response_put.status_code}')
                                     logger.error(response_put.text)
                                     return False
             # Return True after all interfaces are processed
             logger.info(f"HA standby IP configuration completed successfully.")
+            self.save_report_data_file()
+            logger.info("Email report data file updated with standby IPs.")
             return True
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")

@@ -44,10 +44,12 @@ class Step04_FTD_CONF:
         self.fmc_ip = None
         self.rest_api_headers = None
         self.zones_id_list = []
+        self.zones_id_dict = {}
         self.ha_id = None
         self.primary_device_id = None
         self.primary_status_id = None
         self.gw_host_id = None
+        self.network_objects_id = {}
         # Templates that will be loaded later
         self.ftd_ha_tmp = None
         self.ftd_sec_zones_tmp = None
@@ -72,6 +74,7 @@ class Step04_FTD_CONF:
         self.ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{matching_interface_id}}"
         self.fmc_sec_zones_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/securityzones"
         self.fmc_nat_policy_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies"
+        self.fmc_nat_rule_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies/{{nat_policy_id}}/autonatrules"
     
     def create_objects(self):
         try:
@@ -92,12 +95,12 @@ class Step04_FTD_CONF:
                 logger.info(f"Failed to create host object {host_object['name']}. Status code: {response_post.status_code}")
                 return False
             # Create network objects (bulk)
-
             response_post = requests.post(self.fmc_obj_net_url, headers=self.rest_api_headers, data=json.dumps(network_object), verify=False)
             net_obj_creation_re = response_post.json()
             logger.info(response_post.status_code)
             if response_post.status_code in [200,201]:
                 for item in net_obj_creation_re.get('items', []):
+                    self.network_objects_id[item['name']] = item['id']
                     logger.info(f"Network object {item['name']} - {item['value']} created with ID: {item['id']}")
             else:
                 logger.info(f"Failed to create network object {network_object['name']} - {network_object['value']}. Status code: {response_post.status_code}")
@@ -113,6 +116,7 @@ class Step04_FTD_CONF:
          # CREATE SECURITY ZONES ###
         try:
             self.zones_id_list = []
+            self.zones_id_dict = {}
             get_zones = requests.get(self.fmc_sec_zones_url, headers=self.rest_api_headers, verify=False)
             get_zones.raise_for_status()
             existing_zones = get_zones.json().get('items', [])
@@ -126,6 +130,7 @@ class Step04_FTD_CONF:
                     zones = response_zones.json()
                     zones_id = zones.get('id')
                     self.zones_id_list.append(zones_id)
+                    self.zones_id_dict[zone_name] = zones_id
 
                     if response_zones.status_code in [200, 201]:
                         logger.info(f"Security zone {zone_name} created successfully.")
@@ -138,6 +143,7 @@ class Step04_FTD_CONF:
                     for existing_zone in existing_zones:
                         if existing_zone.get('name') == zone_name:
                             self.zones_id_list.append(existing_zone.get('id'))
+                            self.zones_id_dict[zone_name] = existing_zone.get('id')
                             logger.info(f"Security zone {zone_name} already exists. Skipping creation.")
                             break
             time.sleep(5)
@@ -311,21 +317,49 @@ class Step04_FTD_CONF:
             logger.error(f"Error: {e}")
             return False
     def configure_NAT(self):
-        # Placeholder for NAT configuration method
+        # Create NAT policy
         try:
             nat_policy = self.ftd_nat_tmp["nat_policy"]
-
+            nat_rule = self.ftd_nat_tmp["nat_rule"]
+        
             response_nat = requests.post(self.fmc_nat_policy_url, headers=self.rest_api_headers, data=json.dumps(nat_policy), verify=False)
+            response_nat.raise_for_status()
             if response_nat.status_code in [200, 201]:
                 nat_response = response_nat.json()
                 logger.info(f"NAT policy '{nat_policy['name']}' created successfully.")
                 nat_policy_id = nat_response.get('id')
                 logger.info(f"NAT Policy ID: {nat_policy_id}")
-                return True
+            
+                # Create NAT rule
+                # Update network object IDs in NAT rule
+                INSIDE_NET_NAME = f'INSIDE_NET_{os.getenv("FW_HOSTNAME_01", "")}_HA'
+                OUTSIDE_SEC_ZONE_NAME = os.getenv('OUTSIDE_SEC_ZONE', '')
+                INSIDE_SEC_ZONE_NAME = os.getenv('INSIDE_SEC_ZONE', '')
+
+                if INSIDE_NET_NAME in self.network_objects_id:
+                    nat_rule["originalNetwork"]["id"] = self.network_objects_id.get(INSIDE_NET_NAME)
+                if INSIDE_SEC_ZONE_NAME in self.zones_id_dict:
+                    nat_rule["sourceInterface"]["id"] = self.zones_id_dict.get(INSIDE_SEC_ZONE_NAME)
+                if OUTSIDE_SEC_ZONE_NAME in self.zones_id_dict:
+                    nat_rule["destinationInterface"]["id"] = self.zones_id_dict.get(OUTSIDE_SEC_ZONE_NAME)
+
+                response_nat_rule = requests.post(self.fmc_nat_rule_url.format(nat_policy_id=nat_policy_id), headers=self.rest_api_headers, data=json.dumps(nat_rule), verify=False)
+                response_nat_rule.raise_for_status()
+                if response_nat_rule.status_code in [200, 201]:
+                    nat_rule_response = response_nat_rule.json()
+                    nat_rule_id = nat_rule_response.get('id')
+                    logger.info(f"NAT rule created successfully - ID: {nat_rule_id}")
+                    return True
+                else:
+                    logger.error(f"Failed to create NAT rule. Status: {response_nat_rule.status_code}")
+                    return False
+            else:
+                logger.error(f"Failed to create NAT policy. Status: {response_nat.status_code}")
+                return False
+            
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False
-        
     def execute(self):
         """
         Execute FTD zone, interface and route configuration.
@@ -347,7 +381,7 @@ class Step04_FTD_CONF:
         # self.configure_interfaces()
         # self.create_default_route()
         # self.configure_ha_standby()
-        # self.configure_NAT()
+        self.configure_NAT()
 
         return True
 

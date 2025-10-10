@@ -3,5 +3,36 @@
         "type": "FTDNatPolicy",
         "name": "{NAME}",
         "description": "Network Address Translation policy for {HA_NAME} pair"
+    },
+    "nat_rule": {
+        "originalNetwork": {
+            "type": "Network",
+            "id": "INSIDE_NETWORK_OBJECT_ID"
+        },
+        "interfaceInTranslatedNetwork": false,
+        "type": "FTDAutoNatRule",
+        "natType": "DYNAMIC",
+        "interfaceIpv6": false,
+        "fallThrough": false,
+        "dns": false,
+        "routeLookup": false,
+        "noProxyArp": false,
+        "netToNet": false,
+        "sourceInterface": {
+            "id": "INSIDE_SECURITY_ZONE_ID",
+            "type": "SecurityZone"
+        },
+        "destinationInterface": {
+            "id": "OUTSIDE_SECURITY_ZONE_ID",
+            "type": "SecurityZone"
+        },
+        "patOptions": {
+            "extendedPat": false,
+            "flatPortRange": false,
+            "interfacePat": true,
+            "roundRobin": false,
+            "blockAllocation": false,
+            "includeReserve": false
+        }
     }
 }

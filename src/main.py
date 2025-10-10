@@ -85,8 +85,12 @@ def main():
             step = Step04_FTD_CONF()
             success = step.execute()  
         elif args.step == 'fmc_deployment':
-            from projects.ftd_jenkins_automation.src.steps.step_06_email_report import Step05_FMC_DEPLOYMENT
+            from steps.step_05_fmc_deployment import Step05_FMC_DEPLOYMENT
             step = Step05_FMC_DEPLOYMENT()
+            success = step.execute()
+        elif args.step == 'email_report':
+            from steps.step_06_email_report import Step06_EMAIL_DEPLOYMENT_REPORT
+            step = Step06_EMAIL_DEPLOYMENT_REPORT()
             success = step.execute()
         else:
             logger.error(f"Unknown step: {args.step}")

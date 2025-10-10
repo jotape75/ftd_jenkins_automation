@@ -43,20 +43,28 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         """
         Generate the HTML body for the email report.
         """
-        try:
-            report_data = self.email_report_data["network_objects"]
-        except (KeyError, IndexError):
-            report_data = []
-        
+        network_objects = self.email_report_data.get("network_objects", [])
+        security_zones = self.email_report_data.get("security_zones", [])
+
         # Generate table for ALL network objects
         network_table = ""
-        for obj in report_data:
+        for obj in network_objects:
             network_table += f"""
             <tr>
                 <td>{obj.get('name', 'N/A')}</td>
                 <td>{obj.get('type', 'N/A')}</td>
                 <td>{obj.get('IP', obj.get('value', 'N/A'))}</td>
                 <td>{obj.get('id', 'N/A')}</td>
+            </tr>
+            """
+        # Generate table for ALL security zones
+        security_zone_table = ""
+        for zone in security_zones:
+            security_zone_table += f"""
+            <tr>
+                <td>{zone.get('name', 'N/A')}</td>
+                <td>{zone.get('type', 'N/A')}</td>
+                <td>{zone.get('id', 'N/A')}</td>
             </tr>
             """
         
@@ -77,7 +85,8 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 </tr>
                 <tr><td><strong>HA Pair Name:</strong></td><td>{ha_name}</td></tr>
                 <tr><td><strong>FMC IP:</strong></td><td>{fmc_ip}</td></tr>
-                <tr><td><strong>Total Network Objects:</strong></td><td>{len(report_data)}</td></tr>
+                <tr><td><strong>Total Network Objects:</strong></td><td>{len(network_objects)}</td></tr>
+                <tr><td><strong>Total Security Zones:</strong></td><td>{len(security_zones)}</td></tr>
             </table>
             
             <h3 style="color: #4682B4;">Network Objects Created:</h3>
@@ -91,10 +100,20 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 {network_table}
             </table>
             
+            <h3 style="color: #4682B4;">Security Zones Created:</h3>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background-color: #f0f0f0;">
+                    <th>Zone Name</th>
+                    <th>Type</th>
+                    <th>Zone ID</th>
+                </tr>
+                {security_zone_table}
+            </table>
+
             <h3 style="color: #4682B4;">Configuration Steps:</h3>
             <ul>
-                <li>Network Objects Created ({len(report_data)} total)</li>
-                <li>Security Zones Configured</li>
+                <li>Network Objects Created ({len(network_objects)} total)</li>
+                <li>Security Zones Created ({len(security_zones)} total)</li>
                 <li>NAT Policy Applied</li>
             </ul>
             
@@ -150,10 +169,12 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
             bool: True if successful, False otherwise
         """
         self.load_devices_templates()
-        
+
         try:
             logger.info("Starting email report generation...")
             logger.info(f"Found {len(self.email_report_data.get('network_objects', []))} network objects in report")
+            logger.info(f"Found {len(self.email_report_data.get('security_zones', []))} security zones in report")
+            
             
             if self.send_email_report():
                 logger.info("Email report sent successfully")
@@ -175,7 +196,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 logger.info("Loaded email report data dictionary")
         except FileNotFoundError:
             logger.warning("Email report data file not found, using empty data")
-            self.email_report_data = {"network_objects": []}
+            self.email_report_data = {"network_objects": [], "security_zones": []}
         except Exception as e:
             logger.error(f"Error loading email report data: {e}")
-            self.email_report_data = {"network_objects": []}
+            self.email_report_data = {"network_objects": [], "security_zones": []}

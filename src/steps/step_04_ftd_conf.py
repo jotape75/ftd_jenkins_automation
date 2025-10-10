@@ -137,6 +137,8 @@ class Step04_FTD_CONF:
     def create_security_zones(self):
 
          # CREATE SECURITY ZONES ###
+        report_data = self.email_report_data["security_zones"]
+
         try:
             self.zones_id_list = []
             self.zones_id_dict = {}
@@ -149,14 +151,17 @@ class Step04_FTD_CONF:
                 zone_name = template_zone.get('name')
                 if zone_name not in existing_zone_names:
                     response_zones = requests.post(self.fmc_sec_zones_url, headers=self.rest_api_headers, data=json.dumps(template_zone), verify=False)
-                    response_zones.raise_for_status()
                     zones = response_zones.json()
                     zones_id = zones.get('id')
                     self.zones_id_list.append(zones_id)
                     self.zones_id_dict[zone_name] = zones_id
-
                     if response_zones.status_code in [200, 201]:
                         logger.info(f"Security zone {zone_name} created successfully.")
+                        report_data.append({
+                        "name": zones.get('name'),
+                        "type": "Security Zone",
+                        "id": zones.get('id')
+                    })
                     else:
                         logger.info(f"Failed to create security zone {zone_name}. Status code: {response_zones.status_code}")
                         logger.info(response_zones.text)
@@ -168,7 +173,14 @@ class Step04_FTD_CONF:
                             self.zones_id_list.append(existing_zone.get('id'))
                             self.zones_id_dict[zone_name] = existing_zone.get('id')
                             logger.info(f"Security zone {zone_name} already exists. Skipping creation.")
+                            report_data.append({
+                               "name": existing_zone.get('name'),
+                               "type": "Security Zone",
+                               "id": existing_zone.get('id')
+                            })
                             break
+            self.save_report_data_file()
+            logger.info("Email report data file updated with host and network objects.")
             time.sleep(5)
             return True
         except requests.exceptions.RequestException as e:
@@ -212,7 +224,6 @@ class Step04_FTD_CONF:
                     }
                 }
                 response_put = requests.put(self.fmc_url_devices_int_detail.format(primary_status_id=primary_status_id,interface_id=interface_id), headers=headers, data=json.dumps(interface_obj), verify=False)
-                response_put.raise_for_status()
                 if response_put.status_code in [200, 201]:
                     logger.info(f"Security zone assigned to interface {interface_name} on device {primary_name} successfully.")
                     logger.info(f'IP address assigned to interface {interface_name} on device {primary_name} successfully.')
@@ -283,7 +294,6 @@ class Step04_FTD_CONF:
             static_route_payload["selectedNetworks"][0]["id"] = any_ipv4_id
             # Create route
             response_route = requests.post(self.fmc_routing_url.format(primary_status_id=self.primary_status_id), headers=self.rest_api_headers, data=json.dumps(static_route_payload), verify=False)
-            response_route.raise_for_status()
 
             if response_route.status_code in [200, 201]:
                 route_response = response_route.json()
@@ -346,7 +356,6 @@ class Step04_FTD_CONF:
             nat_rule = self.ftd_nat_tmp["nat_rule"]
         
             response_nat = requests.post(self.fmc_nat_policy_url, headers=self.rest_api_headers, data=json.dumps(nat_policy), verify=False)
-            response_nat.raise_for_status()
             if response_nat.status_code in [200, 201]:
                 nat_response = response_nat.json()
                 nat_policy_name = nat_response.get('name')

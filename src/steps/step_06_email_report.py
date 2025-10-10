@@ -150,6 +150,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
             bool: True if successful, False otherwise
         """
         self.load_devices_templates()
+        
         try:
             logger.info("Starting email report generation...")
             logger.info(f"Found {len(self.email_report_data.get('network_objects', []))} network objects in report")

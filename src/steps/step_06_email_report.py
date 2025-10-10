@@ -42,9 +42,6 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         """
         Initialize email deployment report step.
         """
-        # Load the email report data during initialization
-        self.load_devices_templates()
-    
     def _generate_report_body(self):
         """
         Generate the HTML body for the email report.
@@ -155,6 +152,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         Returns:
             bool: True if successful, False otherwise
         """
+        self.load_devices_templates()
         try:
             logger.info("Starting email report generation...")
             logger.info(f"Found {len(self.email_report_data.get('network_objects', []))} network objects in report")

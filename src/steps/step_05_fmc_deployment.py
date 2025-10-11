@@ -83,9 +83,6 @@ class Step05_FMC_DEPLOYMENT:
         for fmc_device in temp_devices_list:
             device_name = fmc_device.get("name")
             if device_name in self.device_names:
-                logger.info(f"Full device object for {device_name}:")
-                logger.info(json.dumps(fmc_device, indent=2))
-                
                 health = fmc_device.get("healthStatus", "").lower()
                 deploy = fmc_device.get("deploymentStatus", "").upper()
                 logger.info(f"Device {device_name} health status: '{health}' - deployment status: '{deploy}'")

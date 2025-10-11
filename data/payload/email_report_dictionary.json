@@ -13,12 +13,11 @@
     },
     "network_objects": [],
     "security_zones": [],
+    "access_policies": [],
     "nat_policy": [],
     "nat_rules": [],
     "interfaces_configured": [],
     "static_routes": [],
-    "ha_configuration": {},     
-    "warnings": [],            
-    "errors": [],
-    "success_steps": []
+    "ha_configuration": [],              
+    "errors": []
 }

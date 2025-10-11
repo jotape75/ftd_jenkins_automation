@@ -49,6 +49,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         static_routes = self.email_report_data.get("static_routes", [])
         nat_rules = self.email_report_data.get("nat_rules", [])
         nat_policy = self.email_report_data.get("nat_policy", [])
+        access_policies = self.email_report_data.get("access_policies", [])
 
 
         # Generate table for ALL network objects
@@ -120,11 +121,26 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{rule.get('original_network', 'N/A')}</td>
             </tr>
             """
+        # Generate table for ALL access policies
+        access_policy_table = ""
+        for policy in access_policies:
+            access_policy_table += f"""
+            <tr>
+                <td>{policy.get('name', 'N/A')}</td>
+                <td>{policy.get('type', 'N/A')}</td>
+                <td>{policy.get('id', 'N/A')}</td>
+                <td>{policy.get('status', 'N/A')}</td>
+            </tr>
+            """
 
         # Get basic deployment info
         ha_name = os.getenv('FW_HOSTNAME_01', 'Unknown') + '_HA'
         fmc_ip = os.getenv('FMC_IP', 'N/A')
-        
+        ftd_device_01 = os.getenv('FW_HOSTNAME_01', 'N/A')
+        ftd_device_02 = os.getenv('FW_HOSTNAME_02', 'N/A')
+        ftd_device_ip_01 = os.getenv('IP_ADD_FW_01', 'N/A')
+        ftd_device_ip_02 = os.getenv('IP_ADD_FW_02', 'N/A')
+
         return f"""
         <html>
         <body style="font-family: Arial, sans-serif; margin: 20px;">
@@ -136,12 +152,15 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                     <td><strong>Parameter</strong></td>
                     <td><strong>Value</strong></td>
                 </tr>
+                <tr><td><strong>FTD device 01:</strong></td><td>{ftd_device_01} - {ftd_device_ip_01}</td></tr>
+                <tr><td><strong>FTD device 02:</strong></td><td>{ftd_device_02} - {ftd_device_ip_02}</td></tr>
                 <tr><td><strong>HA Pair Name:</strong></td><td>{ha_name}</td></tr>
                 <tr><td><strong>FMC IP:</strong></td><td>{fmc_ip}</td></tr>
                 <tr><td><strong>Total Network Objects:</strong></td><td>{len(network_objects)}</td></tr>
                 <tr><td><strong>Total Security Zones:</strong></td><td>{len(security_zones)}</td></tr>
                 <tr><td><strong>Total Interfaces Configured:</strong></td><td>{len(interfaces_configured)}</td></tr>
                 <tr><td><strong>Total Static Routes:</strong></td><td>{len(static_routes)}</td></tr>
+                <tr><td><strong>Total Access Policies:</strong></td><td>{len(access_policies)}</td></tr>
                 <tr><td><strong>Total NAT Policies:</strong></td><td>{len(nat_policy)}</td></tr>
                 <tr><td><strong>Total NAT Rules:</strong></td><td>{len(nat_rules)}</td></tr>
             </table>
@@ -195,9 +214,18 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                     <th>Type</th>
                     <th>Policy ID</th>
                     <th>Status</th>
-            
                 </tr>
                 {nat_policy_table}
+            </table>
+            <h3 style="color: #4682B4;">Access Policies Created:</h3>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background-color: #f0f0f0;">
+                    <th>Policy Name</th>
+                    <th>Type</th>
+                    <th>Policy ID</th>
+                    <th>Status</th>
+                </tr>
+                {access_policy_table}
             </table>
             <h3 style="color: #4682B4;">NAT Rules Created:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
@@ -219,10 +247,6 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         </body>
         </html>
         """
-    
-           
-
-
     def send_email_report(self):
         try:
             # Gmail SMTP settings
@@ -274,6 +298,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
             logger.info(f"Found {len(self.email_report_data.get('security_zones', []))} security zones in report")
             logger.info(f"Found {len(self.email_report_data.get('interfaces_configured', []))} interfaces in report")
             logger.info(f"Found {len(self.email_report_data.get('static_routes', []))} static routes in report")
+            logger.info(f"Found {len(self.email_report_data.get('access_policies', []))} access policies in report")
             logger.info(f"Found {len(self.email_report_data.get('nat_policy', []))} NAT policies in report")
             logger.info(f"Found {len(self.email_report_data.get('nat_rules', []))} NAT rules in report")
             
@@ -302,6 +327,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                                        "security_zones": [], 
                                        "interfaces_configured": [], 
                                        "static_routes": [],
+                                       "access_policies": [],
                                        "nat_policy": [], 
                                        "nat_rules": []}
         except Exception as e:
@@ -310,5 +336,6 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                                       "security_zones": [], 
                                       "interfaces_configured": [], 
                                       "static_routes": [],
+                                       "access_policies": [],
                                        "nat_policy": [], 
                                        "nat_rules": []}

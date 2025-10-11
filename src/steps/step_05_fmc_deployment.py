@@ -149,8 +149,8 @@ class Step05_FMC_DEPLOYMENT:
         return True
 
     def load_devices_templates(self):
-        from utils_ftd import FTD_HA_TEMPLATE,FTD_SEC_ZONES_TEMPLATE,FTD_INT_TEMPLATE,FTD_STATIC_ROUTE_TEMPLATE,FTD_HA_STANDBY_TEMPLATE
-
+        from utils_ftd import FTD_HA_TEMPLATE
+        
         with open(FTD_HA_TEMPLATE, 'r') as f0:
             
             self.ftd_ha_tmp = json.load(f0)

@@ -77,6 +77,46 @@ class Step04_FTD_CONF:
         self.fmc_nat_rule_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies/{{nat_policy_id}}/autonatrules"
         self.fmc_policy_assignment_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/assignment/policyassignments"
     
+    def load_devices_templates(self):
+        from utils_ftd import FTD_HA_TEMPLATE, \
+            FTD_SEC_ZONES_TEMPLATE, \
+            FTD_INT_TEMPLATE, \
+            FTD_STATIC_ROUTE_TEMPLATE, \
+            FTD_HA_STANDBY_TEMPLATE, \
+            FTD_NAT_TEMPLATE, \
+            FTD_OBJECTS_TEMPLATE, \
+            FTD_POLICY_ASSIGNMENT_TEMPLATE, \
+            EMAIL_REPORT_DATA_FILE
+
+        with open(FTD_HA_TEMPLATE, 'r') as f0, \
+            open(FTD_SEC_ZONES_TEMPLATE, 'r') as f1, \
+            open(FTD_INT_TEMPLATE, 'r') as f2, \
+            open(FTD_STATIC_ROUTE_TEMPLATE, 'r') as f3, \
+            open(FTD_HA_STANDBY_TEMPLATE, 'r') as f4, \
+            open(FTD_NAT_TEMPLATE, 'r') as f5, \
+            open(FTD_OBJECTS_TEMPLATE, 'r') as f6, \
+            open(FTD_POLICY_ASSIGNMENT_TEMPLATE, 'r') as f7, \
+            open(EMAIL_REPORT_DATA_FILE, 'r') as f8:
+
+            self.ftd_ha_tmp = json.load(f0)
+            logger.info("Loaded FTD HA template")
+            self.ftd_sec_zones_tmp = json.load(f1)
+            logger.info("Loaded FTD security zones template")
+            self.fmc_int_settings = json.load(f2)
+            logger.info("Loaded FTD interfaces configuration template")
+            self.fmc_route_settings = json.load(f3)
+            logger.info("Loaded FTD static route configuration template")
+            self.fmc_ha_standby_settings = json.load(f4)
+            logger.info("Loaded FTD HA standby IP configuration template")
+            self.ftd_nat_tmp = json.load(f5)
+            logger.info("Loaded FTD NAT configuration template")
+            self.fmc_obj_settings = json.load(f6)
+            logger.info("Loaded FTD Objects configuration template")
+            self.fmc_policy_assignment = json.load(f7)
+            logger.info("Loaded FTD Policy Assignment configuration template")
+            self.email_report_data = json.load(f8)
+            logger.info("Loaded email report data dictionary")
+            
     def save_report_data_file(self):
         from utils_ftd import EMAIL_REPORT_DATA_FILE
 
@@ -464,59 +504,45 @@ class Step04_FTD_CONF:
         Returns:
             bool: True if successful, False otherwise
         """
-        self.load_devices_templates()
-        self.fmc_ip = os.getenv('FMC_IP')
+        try:
+            self.load_devices_templates()
+            self.fmc_ip = os.getenv('FMC_IP')
+            self._initialize_api_urls()
 
-        self._initialize_api_urls()
+            with open('api_keys_data.pkl', 'rb') as f:
+                self.rest_api_headers = pickle.load(f)
+            
+            # Check each step and return False immediately if any fails
+            if not self.create_objects():
+                logger.error("Failed to create objects")
+                return False
+                
+            if not self.create_security_zones():
+                logger.error("Failed to create security zones")
+                return False
+                
+            # Uncomment when ready to test
+            # if not self.configure_interfaces():
+            #     logger.error("Failed to configure interfaces")
+            #     return False
+            #     
+            # if not self.create_default_route():
+            #     logger.error("Failed to create default route")
+            #     return False
+            #     
+            # if not self.configure_ha_standby():
+            #     logger.error("Failed to configure HA standby")
+            #     return False
+                
+            if not self.configure_NAT():
+                logger.error("Failed to configure NAT")
+                return False
 
-        with open('api_keys_data.pkl', 'rb') as f:
-            self.rest_api_headers = pickle.load(f)
-        
-        self.create_objects()
-        self.create_security_zones()
-        # self.configure_interfaces()
-        # self.create_default_route()
-        # self.configure_ha_standby()
-        self.configure_NAT()
+            logger.info("FTD configuration completed successfully!")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Unexpected error in FTD configuration: {e}")
+            return False
 
-        return True
-
-    def load_devices_templates(self):
-        from utils_ftd import FTD_HA_TEMPLATE, \
-            FTD_SEC_ZONES_TEMPLATE, \
-            FTD_INT_TEMPLATE, \
-            FTD_STATIC_ROUTE_TEMPLATE, \
-            FTD_HA_STANDBY_TEMPLATE, \
-            FTD_NAT_TEMPLATE, \
-            FTD_OBJECTS_TEMPLATE, \
-            FTD_POLICY_ASSIGNMENT_TEMPLATE, \
-            EMAIL_REPORT_DATA_FILE
-
-        with open(FTD_HA_TEMPLATE, 'r') as f0, \
-            open(FTD_SEC_ZONES_TEMPLATE, 'r') as f1, \
-            open(FTD_INT_TEMPLATE, 'r') as f2, \
-            open(FTD_STATIC_ROUTE_TEMPLATE, 'r') as f3, \
-            open(FTD_HA_STANDBY_TEMPLATE, 'r') as f4, \
-            open(FTD_NAT_TEMPLATE, 'r') as f5, \
-            open(FTD_OBJECTS_TEMPLATE, 'r') as f6, \
-            open(FTD_POLICY_ASSIGNMENT_TEMPLATE, 'r') as f7, \
-            open(EMAIL_REPORT_DATA_FILE, 'r') as f8:
-
-            self.ftd_ha_tmp = json.load(f0)
-            logger.info("Loaded FTD HA template")
-            self.ftd_sec_zones_tmp = json.load(f1)
-            logger.info("Loaded FTD security zones template")
-            self.fmc_int_settings = json.load(f2)
-            logger.info("Loaded FTD interfaces configuration template")
-            self.fmc_route_settings = json.load(f3)
-            logger.info("Loaded FTD static route configuration template")
-            self.fmc_ha_standby_settings = json.load(f4)
-            logger.info("Loaded FTD HA standby IP configuration template")
-            self.ftd_nat_tmp = json.load(f5)
-            logger.info("Loaded FTD NAT configuration template")
-            self.fmc_obj_settings = json.load(f6)
-            logger.info("Loaded FTD Objects configuration template")
-            self.fmc_policy_assignment = json.load(f7)
-            logger.info("Loaded FTD Policy Assignment configuration template")
-            self.email_report_data = json.load(f8)
-            logger.info("Loaded email report data dictionary")
+    

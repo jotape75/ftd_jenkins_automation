@@ -50,8 +50,18 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         nat_rules = self.email_report_data.get("nat_rules", [])
         nat_policy = self.email_report_data.get("nat_policy", [])
         access_policies = self.email_report_data.get("access_policies", [])
+        ha_configuration = self.email_report_data.get("ha_configuration", [])
 
-
+        # Generate table for HA status
+        ha_table = ""
+        for ha in ha_configuration:
+            ha_table += f"""
+            <tr>
+                <td>{ha.get('ha_name', 'N/A')}</td>
+                <td>{ha.get('primary_device', 'N/A')} - {ha.get('primary_status', 'N/A')}</td>
+                <td>{ha.get('secondary_device', 'N/A')} - {ha.get('secondary_status', 'N/A')}</td>
+            </tr>
+            """
         # Generate table for ALL network objects
         network_table = ""
         for obj in network_objects:
@@ -79,7 +89,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         for intf in interfaces_configured:
             interfaces_table += f"""
             <tr>
-            <td>{intf.get('ifname', intf.get('interface_name', 'N/A'))}</td>
+            <td>{intf.get('ifname', 'N/A')}</td>
             <td>{intf.get('ip_address', 'N/A')}</td>
             <td>{intf.get('netmask', 'N/A')}</td>
             <td>{intf.get('standby_ip', 'N/A')}</td>
@@ -164,7 +174,15 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <tr><td><strong>Total NAT Policies:</strong></td><td>{len(nat_policy)}</td></tr>
                 <tr><td><strong>Total NAT Rules:</strong></td><td>{len(nat_rules)}</td></tr>
             </table>
-            
+            <h3 style="color: #4682B4;">HA Configuration Status:</h3>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background-color: #f0f0f0;">
+                    <th>HA Name</th>
+                    <th>Primary Device - Status</th>
+                    <th>Secondary Device - Status</th>
+                </tr>
+                {ha_table}
+            </table>
             <h3 style="color: #4682B4;">Network Objects Created:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
@@ -207,16 +225,6 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 </tr>
                 {routes_table}
             </table>
-            <h3 style="color: #4682B4;">NAT Policies Created:</h3>
-            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
-                <tr style="background-color: #f0f0f0;">
-                    <th>Policy Name</th>
-                    <th>Type</th>
-                    <th>Policy ID</th>
-                    <th>Status</th>
-                </tr>
-                {nat_policy_table}
-            </table>
             <h3 style="color: #4682B4;">Access Policies Created:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
@@ -227,6 +235,17 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 </tr>
                 {access_policy_table}
             </table>
+            <h3 style="color: #4682B4;">NAT Policies Created:</h3>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background-color: #f0f0f0;">
+                    <th>Policy Name</th>
+                    <th>Type</th>
+                    <th>Policy ID</th>
+                    <th>Status</th>
+                </tr>
+                {nat_policy_table}
+            </table>
+
             <h3 style="color: #4682B4;">NAT Rules Created:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
@@ -294,6 +313,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
 
         try:
             logger.info("Starting email report generation...")
+            logger.info(f"Found {len(self.email_report_data.get('ha_configuration', []))} HA configurations in report")
             logger.info(f"Found {len(self.email_report_data.get('network_objects', []))} network objects in report")
             logger.info(f"Found {len(self.email_report_data.get('security_zones', []))} security zones in report")
             logger.info(f"Found {len(self.email_report_data.get('interfaces_configured', []))} interfaces in report")
@@ -323,7 +343,8 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 logger.info("Loaded email report data dictionary")
         except FileNotFoundError:
             logger.warning("Email report data file not found, using empty data")
-            self.email_report_data = {"network_objects": [],
+            self.email_report_data = {"ha_configuration": [],
+                                      "network_objects": [],
                                        "security_zones": [], 
                                        "interfaces_configured": [], 
                                        "static_routes": [],
@@ -332,10 +353,11 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                                        "nat_rules": []}
         except Exception as e:
             logger.error(f"Error loading email report data: {e}")
-            self.email_report_data = {"network_objects": [], 
-                                      "security_zones": [], 
-                                      "interfaces_configured": [], 
-                                      "static_routes": [],
+            self.email_report_data = {"ha_configuration": [],
+                                       "network_objects": [],
+                                       "security_zones": [],
+                                       "interfaces_configured": [],
+                                       "static_routes": [],
                                        "access_policies": [],
                                        "nat_policy": [], 
                                        "nat_rules": []}

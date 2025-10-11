@@ -39,6 +39,35 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         """
         Initialize email deployment report step.
         """
+    def load_devices_templates(self):
+        try:
+            from utils_ftd import EMAIL_REPORT_DATA_FILE
+            
+            with open(EMAIL_REPORT_DATA_FILE, 'r') as f0:
+                self.email_report_data = json.load(f0)
+                logger.info("Loaded email report data dictionary")
+        except FileNotFoundError:
+            logger.warning("Email report data file not found, using empty data")
+            self.email_report_data = {"health_status": [],
+                                      "ha_configuration": [],
+                                      "network_objects": [],
+                                       "security_zones": [], 
+                                       "interfaces_configured": [], 
+                                       "static_routes": [],
+                                       "access_policies": [],
+                                       "nat_policy": [], 
+                                       "nat_rules": []}
+        except Exception as e:
+            logger.error(f"Error loading email report data: {e}")
+            self.email_report_data = {"health_status": [],
+                                       "ha_configuration": [],
+                                       "network_objects": [],
+                                       "security_zones": [],
+                                       "interfaces_configured": [],
+                                       "static_routes": [],
+                                       "access_policies": [],
+                                       "nat_policy": [], 
+                                       "nat_rules": []}
     def _generate_report_body(self):
         """
         Generate the HTML body for the email report.
@@ -51,6 +80,18 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         nat_policy = self.email_report_data.get("nat_policy", [])
         access_policies = self.email_report_data.get("access_policies", [])
         ha_configuration = self.email_report_data.get("ha_configuration", [])
+        health_status = self.email_report_data.get("health_status", [])
+
+        # Generate table for health status
+        health_table = ""
+        for health in health_status:
+            health_table += f"""
+            <tr>
+                <td>{health.get('device_name', 'N/A')}</td>
+                <td>{health.get('health_status', 'N/A')}</td>
+                <td>{health.get('deployment_status', 'N/A')}</td>
+            </tr>
+            """
 
         # Generate table for HA status
         ha_table = ""
@@ -173,6 +214,15 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <tr><td><strong>Total Access Policies:</strong></td><td>{len(access_policies)}</td></tr>
                 <tr><td><strong>Total NAT Policies:</strong></td><td>{len(nat_policy)}</td></tr>
                 <tr><td><strong>Total NAT Rules:</strong></td><td>{len(nat_rules)}</td></tr>
+            </table>
+            <h3 style="color: #4682B4;">Device Health Status:</h3>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background-color: #f0f0f0;">
+                    <th>Device Name</th>
+                    <th>Health Status</th>
+                    <th>Deployment Status</th>
+                </tr>
+                {health_table}
             </table>
             <h3 style="color: #4682B4;">HA Configuration Status:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
@@ -313,6 +363,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
 
         try:
             logger.info("Starting email report generation...")
+            logger.info(f"Found {len(self.email_report_data.get('health_status', []))} health status entries in report")
             logger.info(f"Found {len(self.email_report_data.get('ha_configuration', []))} HA configurations in report")
             logger.info(f"Found {len(self.email_report_data.get('network_objects', []))} network objects in report")
             logger.info(f"Found {len(self.email_report_data.get('security_zones', []))} security zones in report")
@@ -333,31 +384,3 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         except Exception as e:
             logger.error(f"Error in email report execution: {e}")
             return False
-
-    def load_devices_templates(self):
-        try:
-            from utils_ftd import EMAIL_REPORT_DATA_FILE
-            
-            with open(EMAIL_REPORT_DATA_FILE, 'r') as f0:
-                self.email_report_data = json.load(f0)
-                logger.info("Loaded email report data dictionary")
-        except FileNotFoundError:
-            logger.warning("Email report data file not found, using empty data")
-            self.email_report_data = {"ha_configuration": [],
-                                      "network_objects": [],
-                                       "security_zones": [], 
-                                       "interfaces_configured": [], 
-                                       "static_routes": [],
-                                       "access_policies": [],
-                                       "nat_policy": [], 
-                                       "nat_rules": []}
-        except Exception as e:
-            logger.error(f"Error loading email report data: {e}")
-            self.email_report_data = {"ha_configuration": [],
-                                       "network_objects": [],
-                                       "security_zones": [],
-                                       "interfaces_configured": [],
-                                       "static_routes": [],
-                                       "access_policies": [],
-                                       "nat_policy": [], 
-                                       "nat_rules": []}

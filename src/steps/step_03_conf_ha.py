@@ -46,8 +46,9 @@ class Step03_HAConfig:
     def load_devices_templates(self):
         from utils_ftd import FTD_HA_TEMPLATE, FTD_DEVICES_TEMPLATE,EMAIL_REPORT_DATA_FILE
 
-        with open(FTD_HA_TEMPLATE, 'r') as f0, open(FTD_DEVICES_TEMPLATE, 'r') as f1, \
-            open(EMAIL_REPORT_DATA_FILE, 'r') as f2:
+        with open(FTD_HA_TEMPLATE, 'r') as f0, \
+             open(FTD_DEVICES_TEMPLATE, 'r') as f1, \
+             open(EMAIL_REPORT_DATA_FILE, 'r') as f2:
 
 
             self.ftd_ha_tmp = json.load(f0)

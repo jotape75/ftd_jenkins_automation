@@ -19,5 +19,5 @@
     "interfaces_configured": [],
     "static_routes": [],
     "ha_configuration": [],              
-    "errors": []
+    "health_status": []
 }

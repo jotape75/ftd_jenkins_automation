@@ -381,6 +381,8 @@ class Step04_FTD_CONF:
             return False
     def configure_NAT(self):
         # Create NAT policy
+        nat_policy_report = self.email_report_data.get("nat_policy", [])
+        nat_rules_report = self.email_report_data.get("nat_rules", [])
         try:
             nat_policy = self.ftd_nat_tmp["nat_policy"]
             nat_rule = self.ftd_nat_tmp["nat_rule"]
@@ -392,6 +394,14 @@ class Step04_FTD_CONF:
                 logger.info(f"NAT policy '{nat_policy_name}' created successfully.")
                 nat_policy_id = nat_response.get('id')
                 logger.info(f"NAT Policy ID: {nat_policy_id}")
+                nat_policy_report.append({
+                    "name": nat_policy_name,
+                    "type": "NAT Policy",
+                    "id": nat_policy_id,
+                    "status": "created"
+                })
+                self.save_report_data_file()
+                logger.info("Email report data file updated with NAT policy.")
             
                 # Create NAT rule
                 # Update network object IDs in NAT rule
@@ -407,11 +417,20 @@ class Step04_FTD_CONF:
                     nat_rule["destinationInterface"]["id"] = self.zones_id_dict.get(OUTSIDE_SEC_ZONE_NAME)
 
                 response_nat_rule = requests.post(self.fmc_nat_rule_url.format(nat_policy_id=nat_policy_id), headers=self.rest_api_headers, data=json.dumps(nat_rule), verify=False)
-                response_nat_rule.raise_for_status()
                 if response_nat_rule.status_code in [200, 201]:
                     nat_rule_response = response_nat_rule.json()
                     nat_rule_id = nat_rule_response.get('id')
+                    nat_rules_report.append({
+                            "name": nat_rule_response.get('name'),
+                            "type": nat_rule_response.get('natType'),
+                            "id": nat_rule_id,
+                            "source_interface": INSIDE_SEC_ZONE_NAME,
+                            "destination_interface": OUTSIDE_SEC_ZONE_NAME,
+                            "original_network": INSIDE_NET_NAME
+                        })
                     logger.info(f"NAT rule created successfully - ID: {nat_rule_id}")
+                    self.save_report_data_file()
+                    logger.info("Email report data file updated with NAT rule.")
                     dev_id ="75bbe1f6-a469-11f0-8c2e-c61e777f4f0a" #temporary, to be removed
                     nat_policy_assignment = self.fmc_policy_assignment["nat_policy_assignment"]
                     nat_policy_assignment["policy"]["name"] = nat_policy_name
@@ -420,7 +439,6 @@ class Step04_FTD_CONF:
                     #nat_policy_assignment["targets"][0]["id"] = self.primary_status_id
                     nat_policy_assignment["targets"][0]["id"] = dev_id #temporary, to be removed
                     response_policy_assignment = requests.post(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(nat_policy_assignment), verify=False)
-                    response_policy_assignment.raise_for_status()
                     if response_policy_assignment.status_code in [200, 201]:
                         logger.info(f"NAT policy '{nat_policy_name}' assigned to device {self.ftd_ha_tmp['ha_payload']['name']} successfully.")
                         return True
@@ -434,7 +452,7 @@ class Step04_FTD_CONF:
             else:
                 logger.error(f"Failed to create NAT policy. Status: {response_nat.status_code}")
                 return False
-            
+
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False

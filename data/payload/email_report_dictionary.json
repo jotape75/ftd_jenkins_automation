@@ -13,7 +13,7 @@
     },
     "network_objects": [],
     "security_zones": [],
-    "nat_policy": {},
+    "nat_policy": [],
     "nat_rules": [],
     "interfaces_configured": [],
     "static_routes": [],

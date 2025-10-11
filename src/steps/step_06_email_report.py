@@ -47,6 +47,9 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         security_zones = self.email_report_data.get("security_zones", [])
         interfaces_configured = self.email_report_data.get("interfaces_configured", [])
         static_routes = self.email_report_data.get("static_routes", [])
+        nat_rules = self.email_report_data.get("nat_rules", [])
+        nat_policy = self.email_report_data.get("nat_policy", [])
+
 
         # Generate table for ALL network objects
         network_table = ""
@@ -79,7 +82,6 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
             <td>{intf.get('ip_address', 'N/A')}</td>
             <td>{intf.get('netmask', 'N/A')}</td>
             <td>{intf.get('standby_ip', 'N/A')}</td>
-            <td>{intf.get('id', 'N/A')}</td>
             </tr>
             """
         # Generate table for ALL static routes
@@ -92,6 +94,30 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{route.get('next_hop', 'N/A')}</td>
                 <td>{route.get('type', 'N/A')}</td>
                 <td>{route.get('id', 'N/A')}</td>
+            </tr>
+            """
+        # Generate table for ALL NAT policies and rules
+ 
+        nat_policy_table = ""
+        for policy in nat_policy:
+            nat_policy_table += f"""
+            <tr>
+                <td>{policy.get('name', 'N/A')}</td>
+                <td>{policy.get('type', 'N/A')}</td>
+                <td>{policy.get('id', 'N/A')}</td>
+                <td>{policy.get('status', 'N/A')}</td>
+            </tr>
+            """
+        nat_rules_table = ""
+        for rule in nat_rules:
+            nat_rules_table += f"""
+            <tr>
+                <td>{rule.get('name', 'N/A')}</td>
+                <td>{rule.get('type', 'N/A')}</td>
+                <td>{rule.get('id', 'N/A')}</td>
+                <td>{rule.get('source_interface', 'N/A')}</td>
+                <td>{rule.get('destination_interface', 'N/A')}</td>
+                <td>{rule.get('original_network', 'N/A')}</td>
             </tr>
             """
 
@@ -116,6 +142,8 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <tr><td><strong>Total Security Zones:</strong></td><td>{len(security_zones)}</td></tr>
                 <tr><td><strong>Total Interfaces Configured:</strong></td><td>{len(interfaces_configured)}</td></tr>
                 <tr><td><strong>Total Static Routes:</strong></td><td>{len(static_routes)}</td></tr>
+                <tr><td><strong>Total NAT Policies:</strong></td><td>{len(nat_policy)}</td></tr>
+                <tr><td><strong>Total NAT Rules:</strong></td><td>{len(nat_rules)}</td></tr>
             </table>
             
             <h3 style="color: #4682B4;">Network Objects Created:</h3>
@@ -135,6 +163,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                     <th>Zone Name</th>
                     <th>Type</th>
                     <th>Zone ID</th>
+                    <th>Status</th>
                 </tr>
                 {security_zone_table}
             </table>
@@ -145,8 +174,6 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                     <th>IP Address</th>
                     <th>Subnet Mask</th>
                     <th>Standby IP</th>
-                    <th>Security Zone</th>
-                    <th>Interface ID</th>
                 </tr>
                 {interfaces_table}
             </table>
@@ -161,18 +188,30 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 </tr>
                 {routes_table}
             </table>
-
-
-            <h3 style="color: #4682B4;">Configuration Steps:</h3>
-            <ul>
-                <li>Network Objects Created ({len(network_objects)} total)</li>
-                <li>Security Zones Created ({len(security_zones)} total)</li>
-                <li>Interfaces Configured ({len(interfaces_configured)} total)</li>
-                <li>Static Routes Created ({len(static_routes)} total)</li>
-                <li>Default Route Created</li>
-                <li>NAT Policy Applied</li>
-            </ul>
+            <h3 style="color: #4682B4;">NAT Policies Created:</h3>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background-color: #f0f0f0;">
+                    <th>Policy Name</th>
+                    <th>Type</th>
+                    <th>Policy ID</th>
+                    <th>Status</th>
             
+                </tr>
+                {nat_policy_table}
+            </table>
+            <h3 style="color: #4682B4;">NAT Rules Created:</h3>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background-color: #f0f0f0;">
+                    <th>Rule Name</th>
+                    <th>Type</th>
+                    <th>Rule ID</th>
+                    <th>Source Interface</th>
+                    <th>Destination Interface</th>
+                    <th>Original Network</th>
+                </tr>
+                {nat_rules_table}
+            </table>
+
             <div style="background-color: #d4edda; padding: 15px; border-radius: 5px; margin-top: 20px;">
                 <h3 style="color: #155724; margin-top: 0;">Deployment Status: SUCCESS</h3>
                 <p style="margin-bottom: 0;"><strong>FTD configuration completed successfully!</strong></p>
@@ -180,6 +219,9 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         </body>
         </html>
         """
+    
+           
+
 
     def send_email_report(self):
         try:
@@ -232,6 +274,8 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
             logger.info(f"Found {len(self.email_report_data.get('security_zones', []))} security zones in report")
             logger.info(f"Found {len(self.email_report_data.get('interfaces_configured', []))} interfaces in report")
             logger.info(f"Found {len(self.email_report_data.get('static_routes', []))} static routes in report")
+            logger.info(f"Found {len(self.email_report_data.get('nat_policy', []))} NAT policies in report")
+            logger.info(f"Found {len(self.email_report_data.get('nat_rules', []))} NAT rules in report")
             
             
             if self.send_email_report():
@@ -254,7 +298,17 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 logger.info("Loaded email report data dictionary")
         except FileNotFoundError:
             logger.warning("Email report data file not found, using empty data")
-            self.email_report_data = {"network_objects": [], "security_zones": [], "interfaces_configured": [], "static_routes": []}
+            self.email_report_data = {"network_objects": [],
+                                       "security_zones": [], 
+                                       "interfaces_configured": [], 
+                                       "static_routes": [],
+                                       "nat_policy": [], 
+                                       "nat_rules": []}
         except Exception as e:
             logger.error(f"Error loading email report data: {e}")
-            self.email_report_data = {"network_objects": [], "security_zones": [], "interfaces_configured": [], "static_routes": []}
+            self.email_report_data = {"network_objects": [], 
+                                      "security_zones": [], 
+                                      "interfaces_configured": [], 
+                                      "static_routes": [],
+                                       "nat_policy": [], 
+                                       "nat_rules": []}

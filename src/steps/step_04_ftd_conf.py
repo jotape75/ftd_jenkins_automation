@@ -477,7 +477,7 @@ class Step04_FTD_CONF:
         # self.configure_interfaces()
         # self.create_default_route()
         # self.configure_ha_standby()
-        # self.configure_NAT()
+        self.configure_NAT()
 
         return True
 

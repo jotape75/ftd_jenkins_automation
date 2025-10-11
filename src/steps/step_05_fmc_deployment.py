@@ -61,7 +61,7 @@ class Step05_FMC_DEPLOYMENT:
             json.dump(self.email_report_data, f, indent=4)
 
     def _initialize_api_urls(self):
-        self.fmc_device_health = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords"
+        self.fmc_device_health = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords?expanded=true"
         self.fmc_ha_settings_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs"
         self.fmc_ha_check_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}"
         self.deployable_devices = f'https://{self.fmc_ip}/api/fmc_config/v1/domain/default/deployment/deployabledevices'
@@ -79,13 +79,19 @@ class Step05_FMC_DEPLOYMENT:
         for device in self.ftd_devices_tmp["device_payload"]:
             device_name = device.get("name")
             self.device_names.append(device_name)
-        for name in temp_devices_list:
-            if name.get('name') in self.device_names:
-                health = name.get("healthStatus", "").lower()
-                deploy = name.get("deploymentStatus", "").upper()
-                logger.info(f"Device {name.get('name')} health status: {health} - deployment status: {deploy}")
+
+        for fmc_device in temp_devices_list:
+            device_name = fmc_device.get("name")
+            if device_name in self.device_names:
+                logger.info(f"Full device object for {device_name}:")
+                logger.info(json.dumps(fmc_device, indent=2))
+                
+                health = fmc_device.get("healthStatus", "").lower()
+                deploy = fmc_device.get("deploymentStatus", "").upper()
+                logger.info(f"Device {device_name} health status: '{health}' - deployment status: '{deploy}'")
+   
                 device_health_report.append({
-                    'device_name': name.get('name'),
+                    'device_name': device_name,
                     'health_status': health,
                     'deployment_status': deploy
                 })

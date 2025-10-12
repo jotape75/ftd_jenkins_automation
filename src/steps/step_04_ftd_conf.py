@@ -191,6 +191,12 @@ class Step04_FTD_CONF:
                 for obj in existing_host_objects:
                     if obj.get('name') == host_object['name']:
                         self.gw_host_id = obj.get('id')
+                        report_data.append({
+                            "name": host_object['name'],
+                            "IP": host_object['value'],
+                            "type": "Host", 
+                            "id": self.gw_host_id
+                        })
                         break
                 
                 # Get existing network object IDs for later use
@@ -198,6 +204,12 @@ class Step04_FTD_CONF:
                     for template_net in network_objects:
                         if obj.get('name') == template_net['name']:
                             self.network_objects_id[obj.get('name')] = obj.get('id')
+                            report_data.append({
+                                "name": obj.get('name'),
+                                "IP": obj.get('value'),
+                                "type": "Network",
+                                "id": obj.get('id')
+                            })
                 
                 return True
             
@@ -225,6 +237,12 @@ class Step04_FTD_CONF:
                 for obj in existing_host_objects:
                     if obj.get('name') == host_object['name']:
                         self.gw_host_id = obj.get('id')
+                        report_data.append({
+                            "name": host_object['name'],
+                            "IP": host_object['value'],
+                            "type": "Host", 
+                            "id": self.gw_host_id
+                        })
                         break
             
             # Create network objects if they don't exist
@@ -264,6 +282,12 @@ class Step04_FTD_CONF:
                 for template_net in network_objects:
                     if obj.get('name') == template_net['name']:
                         self.network_objects_id[obj.get('name')] = obj.get('id')
+                        report_data.append({
+                            "name": obj.get('name'),
+                            "IP": obj.get('value'),
+                            "type": "Network",
+                            "id": obj.get('id')
+                        })
             
             self.save_report_data_file()
             logger.info("Email report data file updated with host and network objects.")

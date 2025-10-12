@@ -136,8 +136,8 @@ class Step04_FTD_CONF:
             response_get.raise_for_status()
             existing_network_objects = response_get.json()
             for obj in existing_network_objects:
-                obj_name = obj.get('name')
-                obj_ip = obj.get('value')
+                obj_name = obj["items"]["name"]
+                obj_ip = obj["items"]["value"]
                 if obj_name == network_object['name']:
                     logger.info(f"Network object {network_object['name']} already exists.")
                 elif obj_ip == network_object['value']:

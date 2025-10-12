@@ -138,13 +138,13 @@ class Step04_FTD_CONF:
             for obj in existing_network_objects:
                 obj_name = obj.get('name')
                 obj_ip = obj.get('value')
-                if obj_name == network_object['name']:
+                if obj_name == network_object.get('name'):
                     logger.info(f"Network object {network_object['name']} already exists.")
-                elif obj_ip == network_object['value']:
+                elif obj_ip == network_object.get('value'):
                     logger.info(f" {network_object['value']} already exists.")
-                if obj_name == host_object['name']:
+                if obj_name == host_object.get('name'):
                     logger.info(f"Host object {host_object['name']} already exists.")
-                elif obj_ip == host_object['value']:
+                elif obj_ip == host_object.get('value'):
                     logger.info(f" {host_object['value']} already exists.")
 
                 return False

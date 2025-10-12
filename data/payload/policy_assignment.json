@@ -19,7 +19,7 @@
         "type": "PolicyAssignment",
         "policy": {
             "type": "PG.PLATFORM.NgfwPFSettings",
-            "name": "PLATFORM_SETTINGS_NAME",
+            "name": "{PLATFORM_SETTINGS_NAME}",
             "id": "PLATFORM_SETTINGS_POLICY_ID_PLACEHOLDER"
         },
         "targets": [

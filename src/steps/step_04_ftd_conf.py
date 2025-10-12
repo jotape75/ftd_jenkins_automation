@@ -68,7 +68,7 @@ class Step04_FTD_CONF:
         self.url_devices_int = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{primary_status_id}}/physicalinterfaces"
         self.fmc_obj_host_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/hosts"
         self.fmc_obj_net_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/networks?bulk=true"
-        self.fmc_obj_network_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/networks"
+        self.fmc_obj_network_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/object/networks?expanded=true"
         self.fmc_routing_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{primary_status_id}}/routing/ipv4staticroutes"
         self.ha_monitored_interfaces = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces"
         self.ha_monitored_interfaces_detail = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs/{{ha_id}}/monitoredinterfaces/{{matching_interface_id}}"
@@ -131,7 +131,26 @@ class Step04_FTD_CONF:
             network_object = self.fmc_obj_settings["network_object"]
             report_data = self.email_report_data.get("network_objects", [])
 
+            #Check if object already exists
+            response_get = requests.get(self.fmc_obj_network_url, headers=self.rest_api_headers, verify=False)
+            response_get.raise_for_status()
+            existing_network_objects = response_get.json().get('items', [])
+            for obj in existing_network_objects:
+                obj_name = obj.get('name')
+                obj_ip = obj.get('value')
+                if obj_name == network_object['name']:
+                    logger.info(f"Network object {network_object['name']} already exists.")
+                elif obj_ip == network_object['value']:
+                    logger.info(f" {network_object['value']} already exists.")
+                if obj_name == host_object['name']:
+                    logger.info(f"Host object {host_object['name']} already exists.")
+                elif obj_ip == host_object['value']:
+                    logger.info(f" {host_object['value']} already exists.")
+
+                return False
+            
             # Create host object:
+        
             response_post = requests.post(self.fmc_obj_host_url, headers=self.rest_api_headers, data=json.dumps(host_object), verify=False)
             obj_creation_re = response_post.json()
             logger.info(response_post.status_code)

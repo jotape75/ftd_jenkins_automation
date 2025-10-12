@@ -124,55 +124,91 @@ class Step04_FTD_CONF:
         with open(EMAIL_REPORT_DATA_FILE, 'w') as f:
             json.dump(self.email_report_data, f, indent=4)
 
-    def create_objects(self):
-        try:
+def create_objects(self):
+    try:
+        host_object = self.fmc_obj_settings["host_object"]
+        network_object = self.fmc_obj_settings["network_object"]
+        report_data = self.email_report_data.get("network_objects", [])
 
-            host_object = self.fmc_obj_settings["host_object"]
-            network_object = self.fmc_obj_settings["network_object"]
-            report_data = self.email_report_data.get("network_objects", [])
-
-            #Check if object already exists
-            response_get = requests.get(self.fmc_obj_network_url, headers=self.rest_api_headers, verify=False)
-            response_get.raise_for_status()
-            existing_network_objects = response_get.json()
-            for obj in existing_network_objects:
-                obj_name = obj["items"]["name"]
-                obj_ip = obj["items"]["value"]
-                if obj_name == network_object['name']:
-                    logger.info(f"Network object {network_object['name']} already exists.")
-                elif obj_ip == network_object['value']:
-                    logger.info(f" {network_object['value']} already exists.")
-                if obj_name == host_object['name']:
-                    logger.info(f"Host object {host_object['name']} already exists.")
-                elif obj_ip == host_object['value']:
-                    logger.info(f" {host_object['value']} already exists.")
-
-                return False
-            
-            # Create host object:
+        # Check if objects already exist
+        response_get = requests.get(self.fmc_obj_network_url, headers=self.rest_api_headers, verify=False)
+        response_get.raise_for_status()
+        existing_network_objects = response_get.json().get('items', [])
         
+        # Check for conflicts before creating
+        conflicts_found = False
+        host_exists = False
+        network_exists = False
+        
+        for obj in existing_network_objects:
+            obj_name = obj.get("name")
+            obj_value = obj.get("value")
+            
+            # Check for CONFLICTS in network object
+            if obj_name == network_object['name'] and obj_value != network_object['value']:
+                logger.error(f"CONFLICT: Network object name '{network_object['name']}' exists but with different value. Existing: {obj_value}, Template: {network_object['value']}")
+                conflicts_found = True
+            elif obj_value == network_object['value'] and obj_name != network_object['name']:
+                logger.error(f"CONFLICT: Network value '{network_object['value']}' exists but with different name. Existing: {obj_name}, Template: {network_object['name']}")
+                conflicts_found = True
+            elif obj_name == network_object['name'] and obj_value == network_object['value']:
+                logger.info(f"Network object {network_object['name']} ({network_object['value']}) already exists - exact match.")
+                network_exists = True
+            
+            # Check for CONFLICTS in host object
+            if obj_name == host_object['name'] and obj_value != host_object['value']:
+                logger.error(f"CONFLICT: Host object name '{host_object['name']}' exists but with different value. Existing: {obj_value}, Template: {host_object['value']}")
+                conflicts_found = True
+            elif obj_value == host_object['value'] and obj_name != host_object['name']:
+                logger.error(f"CONFLICT: Host value '{host_object['value']}' exists but with different name. Existing: {obj_name}, Template: {host_object['name']}")
+                conflicts_found = True
+            elif obj_name == host_object['name'] and obj_value == host_object['value']:
+                logger.info(f"Host object {host_object['name']} ({host_object['value']}) already exists - exact match.")
+                host_exists = True
+
+        # Stop if conflicts found
+        if conflicts_found:
+            logger.error("Object conflicts detected. Cannot proceed with automation.")
+            return False
+        
+        # Skip creation if exact matches found
+        if host_exists and network_exists:
+            logger.info("All objects already exist with exact matches. Skipping creation.")
+            return True
+        
+        # Create host object if it doesn't exist
+        if not host_exists:
+            logger.info(f"Creating host object: {host_object['name']} - {host_object['value']}")
             response_post = requests.post(self.fmc_obj_host_url, headers=self.rest_api_headers, data=json.dumps(host_object), verify=False)
             obj_creation_re = response_post.json()
-            logger.info(response_post.status_code)
-            if response_post.status_code in [200,201]:
+            
+            if response_post.status_code in [200, 201]:
                 self.gw_host_id = obj_creation_re.get('id')
                 report_data.append({
-                        "name": host_object['name'],
-                        "IP": host_object['value'],
-                        "type": "Host", 
-                        "id": self.gw_host_id
+                    "name": host_object['name'],
+                    "IP": host_object['value'],
+                    "type": "Host", 
+                    "id": self.gw_host_id
                 })
-                    
                 logger.info(f"Host object {host_object['name']} - {host_object['value']} created with ID: {self.gw_host_id}.")
-
             else:
-                logger.info(f"Failed to create host object {host_object['name']}. Status code: {response_post.status_code}")
+                logger.error(f"Failed to create host object {host_object['name']}. Status code: {response_post.status_code}")
+                logger.error(response_post.text)
                 return False
-            # Create network objects (bulk)
+        else:
+            # Get existing host ID for later use
+            for obj in existing_network_objects:
+                if obj.get('name') == host_object['name']:
+                    self.gw_host_id = obj.get('id')
+                    break
+        
+        # Create network objects if they don't exist
+        if not network_exists:
+            logger.info(f"Creating network object: {network_object['name']} - {network_object['value']}")
             response_post = requests.post(self.fmc_obj_net_url, headers=self.rest_api_headers, data=json.dumps(network_object), verify=False)
             net_obj_creation_re = response_post.json()
-            logger.info(response_post.status_code)
-            if response_post.status_code in [200,201]:
+            
+            if response_post.status_code in [200, 201]:
                 for item in net_obj_creation_re.get('items', []):
                     self.network_objects_id[item['name']] = item['id']
                     logger.info(f"Network object {item['name']} - {item['value']} created with ID: {item['id']}")
@@ -183,15 +219,22 @@ class Step04_FTD_CONF:
                         "id": item['id']
                     })
             else:
-                logger.info(f"Failed to create network object {network_object['name']} - {network_object['value']}. Status code: {response_post.status_code}")
+                logger.error(f"Failed to create network objects. Status code: {response_post.status_code}")
+                logger.error(response_post.text)
                 return False
-            self.save_report_data_file()
-            logger.info("Email report data file updated with host and network objects.")
-            return True
+        else:
+            # Get existing network object IDs for later use
+            for obj in existing_network_objects:
+                if obj.get('name') in [net['name'] for net in network_object.get('items', [])]:
+                    self.network_objects_id[obj.get('name')] = obj.get('id')
         
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error: {e}")
-            return False    
+        self.save_report_data_file()
+        logger.info("Email report data file updated with host and network objects.")
+        return True
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error: {e}")
+        return False
   
     def create_security_zones(self):
 

@@ -687,19 +687,17 @@ class Step04_FTD_CONF:
             if not self.create_security_zones():
                 logger.error("Failed to create security zones")
                 return False
+            if not self.configure_interfaces():
+                logger.error("Failed to configure interfaces")
+                return False
                 
-            # Uncomment when ready to test
-            # if not self.configure_interfaces():
-            #     logger.error("Failed to configure interfaces")
-            #     return False
-            #     
-            # if not self.create_default_route():
-            #     logger.error("Failed to create default route")
-            #     return False
-            #     
-            # if not self.configure_ha_standby():
-            #     logger.error("Failed to configure HA standby")
-            #     return False
+            if not self.create_default_route():
+                logger.error("Failed to create default route")
+                return False
+                
+            if not self.configure_ha_standby():
+                logger.error("Failed to configure HA standby")
+                return False
                 
             if not self.configure_NAT():
                 logger.error("Failed to configure NAT")

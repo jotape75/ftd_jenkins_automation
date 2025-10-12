@@ -18,7 +18,7 @@
     "psettings_policy_assignment": {
         "type": "PolicyAssignment",
         "policy": {
-            "type": "FTDPlatformSettingsPolicy",
+            "type": "PG.PLATFORM.NgfwPFSettings",
             "name": "PLATFORM_SETTINGS_NAME",
             "id": "PLATFORM_SETTINGS_POLICY_ID_PLACEHOLDER"
         },

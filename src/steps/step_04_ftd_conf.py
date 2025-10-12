@@ -127,24 +127,34 @@ class Step04_FTD_CONF:
     def create_objects(self):
         try:
             host_object = self.fmc_obj_settings["host_object"]
-            network_objects = self.fmc_obj_settings["network_object"]  # This is a LIST
+            network_objects = self.fmc_obj_settings["network_object"]
             report_data = self.email_report_data.get("network_objects", [])
 
-            # Check if objects already exist
+            # Get existing network objects
             response_get = requests.get(self.fmc_obj_network_url, headers=self.rest_api_headers, verify=False)
             response_get.raise_for_status()
             existing_network_objects = response_get.json().get('items', [])
             
+            # Add this line to get existing host objects
+            response_host_get = requests.get(self.fmc_obj_host_url + "?expanded=true", headers=self.rest_api_headers, verify=False)
+            response_host_get.raise_for_status()
+            existing_host_objects = response_host_get.json().get('items', [])
+            
+            # Combine both lists for conflict checking
+            all_existing_objects = existing_network_objects + existing_host_objects
+            
             # Check for conflicts before creating
             conflicts_found = False
             host_exists = False
-            networks_exist = {}  # Track each network separately
-            
-            for obj in existing_network_objects:
+            networks_exist = {}
+        
+            # Change this line to use combined list
+            for obj in all_existing_objects:  # Instead of just existing_network_objects
                 obj_name = obj.get("name")
                 obj_value = obj.get("value")
                 
                 # Check for CONFLICTS in host object
+                
                 if obj_name == host_object['name'] and obj_value != host_object['value']:
                     logger.error(f"CONFLICT: Host object name '{host_object['name']}' exists but with different value. Existing: {obj_value}, Template: {host_object['value']}")
                     conflicts_found = True

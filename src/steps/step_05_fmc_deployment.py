@@ -115,8 +115,7 @@ class Step05_FMC_DEPLOYMENT:
                 secondary_device = metadata["secondaryStatus"]["device"]["name"]
                 primary_status = metadata["primaryStatus"]["currentStatus"]
                 secondary_status = metadata["secondaryStatus"]["currentStatus"]
-
-
+                logger.info(f"HA Pair: {ha_name}, Primary: {primary_device} ({primary_status}), Secondary: {secondary_device} ({secondary_status})")
                 ha_status_report.append({
                     'ha_name': ha_name,
                     'primary_device': primary_device,

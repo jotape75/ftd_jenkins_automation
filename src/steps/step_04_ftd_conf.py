@@ -127,7 +127,7 @@ class Step04_FTD_CONF:
     def create_objects(self):
         try:
             host_object = self.fmc_obj_settings["host_object"]
-            network_object = self.fmc_obj_settings["network_object"]
+            network_objects = self.fmc_obj_settings["network_object"]  # This is a LIST
             report_data = self.email_report_data.get("network_objects", [])
 
             # Check if objects already exist
@@ -138,22 +138,11 @@ class Step04_FTD_CONF:
             # Check for conflicts before creating
             conflicts_found = False
             host_exists = False
-            network_exists = False
+            networks_exist = {}  # Track each network separately
             
             for obj in existing_network_objects:
                 obj_name = obj.get("name")
                 obj_value = obj.get("value")
-                
-                # Check for CONFLICTS in network object
-                if obj_name == network_object['name'] and obj_value != network_object['value']:
-                    logger.error(f"CONFLICT: Network object name '{network_object['name']}' exists but with different value. Existing: {obj_value}, Template: {network_object['value']}")
-                    conflicts_found = True
-                elif obj_value == network_object['value'] and obj_name != network_object['name']:
-                    logger.error(f"CONFLICT: Network value '{network_object['value']}' exists but with different name. Existing: {obj_name}, Template: {network_object['name']}")
-                    conflicts_found = True
-                elif obj_name == network_object['name'] and obj_value == network_object['value']:
-                    logger.info(f"Network object {network_object['name']} ({network_object['value']}) already exists - exact match.")
-                    network_exists = True
                 
                 # Check for CONFLICTS in host object
                 if obj_name == host_object['name'] and obj_value != host_object['value']:
@@ -165,14 +154,29 @@ class Step04_FTD_CONF:
                 elif obj_name == host_object['name'] and obj_value == host_object['value']:
                     logger.info(f"Host object {host_object['name']} ({host_object['value']}) already exists - exact match.")
                     host_exists = True
+                
+                # Check for CONFLICTS in network objects (loop through the list)
+                for template_net in network_objects:
+                    if obj_name == template_net['name'] and obj_value != template_net['value']:
+                        logger.error(f"CONFLICT: Network object name '{template_net['name']}' exists but with different value. Existing: {obj_value}, Template: {template_net['value']}")
+                        conflicts_found = True
+                    elif obj_value == template_net['value'] and obj_name != template_net['name']:
+                        logger.error(f"CONFLICT: Network value '{template_net['value']}' exists but with different name. Existing: {obj_name}, Template: {template_net['name']}")
+                        conflicts_found = True
+                    elif obj_name == template_net['name'] and obj_value == template_net['value']:
+                        logger.info(f"Network object {template_net['name']} ({template_net['value']}) already exists - exact match.")
+                        networks_exist[template_net['name']] = True
 
             # Stop if conflicts found
             if conflicts_found:
                 logger.error("Object conflicts detected. Cannot proceed with automation.")
                 return False
             
+            # Check if all networks exist
+            all_networks_exist = len(networks_exist) == len(network_objects)
+            
             # Skip creation if exact matches found
-            if host_exists and network_exists:
+            if host_exists and all_networks_exist:
                 logger.info("All objects already exist with exact matches. Skipping creation.")
                 return True
             
@@ -203,30 +207,36 @@ class Step04_FTD_CONF:
                         break
             
             # Create network objects if they don't exist
-            if not network_exists:
-                logger.info(f"Creating network object: {network_object['name']} - {network_object['value']}")
-                response_post = requests.post(self.fmc_obj_net_url, headers=self.rest_api_headers, data=json.dumps(network_object), verify=False)
-                net_obj_creation_re = response_post.json()
+            if not all_networks_exist:
+                # Create network objects that don't exist
+                networks_to_create = []
+                for template_net in network_objects:
+                    if template_net['name'] not in networks_exist:
+                        networks_to_create.append(template_net)
                 
-                if response_post.status_code in [200, 201]:
-                    for item in net_obj_creation_re.get('items', []):
-                        self.network_objects_id[item['name']] = item['id']
-                        logger.info(f"Network object {item['name']} - {item['value']} created with ID: {item['id']}")
-                        report_data.append({
-                            "name": item['name'],
-                            "IP": item['value'],
-                            "type": "Network",
-                            "id": item['id']
-                        })
-                else:
-                    logger.error(f"Failed to create network objects. Status code: {response_post.status_code}")
-                    logger.error(response_post.text)
-                    return False
-            else:
-                # Get existing network object IDs for later use
-                for obj in existing_network_objects:
-                    if obj.get('name') in [net['name'] for net in network_object.get('items', [])]:
-                        self.network_objects_id[obj.get('name')] = obj.get('id')
+                if networks_to_create:
+                    logger.info(f"Creating {len(networks_to_create)} network objects")
+                    
+                    # Create as bulk operation
+                    bulk_payload = {"items": networks_to_create}
+                    response_post = requests.post(self.fmc_obj_net_url, headers=self.rest_api_headers, data=json.dumps(bulk_payload), verify=False)
+                    net_obj_creation_re = response_post.json()
+                    
+                    if response_post.status_code in [200, 201]:
+                        items = net_obj_creation_re.get('items', [])
+                        for item in items:
+                            self.network_objects_id[item['name']] = item['id']
+                            logger.info(f"Network object {item['name']} - {item['value']} created with ID: {item['id']}")
+                            report_data.append({
+                                "name": item['name'],
+                                "IP": item['value'],
+                                "type": "Network",
+                                "id": item['id']
+                            })
+                    else:
+                        logger.error(f"Failed to create network objects. Status code: {response_post.status_code}")
+                        logger.error(response_post.text)
+                        return False
             
             self.save_report_data_file()
             logger.info("Email report data file updated with host and network objects.")
@@ -234,6 +244,10 @@ class Step04_FTD_CONF:
             
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Unexpected error in create_objects: {e}")
+            logger.error(f"network_objects structure: {network_objects}")
             return False
   
     def create_security_zones(self):

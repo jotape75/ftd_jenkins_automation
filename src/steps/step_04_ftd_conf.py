@@ -149,12 +149,11 @@ class Step04_FTD_CONF:
             networks_exist = {}
         
             # Change this line to use combined list
-            for obj in all_existing_objects:  # Instead of just existing_network_objects
+            for obj in all_existing_objects:
                 obj_name = obj.get("name")
                 obj_value = obj.get("value")
                 
                 # Check for CONFLICTS in host object
-                
                 if obj_name == host_object['name'] and obj_value != host_object['value']:
                     logger.error(f"CONFLICT: Host object name '{host_object['name']}' exists but with different value. Existing: {obj_value}, Template: {host_object['value']}")
                     conflicts_found = True
@@ -188,6 +187,18 @@ class Step04_FTD_CONF:
             # Skip creation if exact matches found
             if host_exists and all_networks_exist:
                 logger.info("All objects already exist with exact matches. Skipping creation.")
+                # Get existing host ID for later use
+                for obj in existing_host_objects:
+                    if obj.get('name') == host_object['name']:
+                        self.gw_host_id = obj.get('id')
+                        break
+                
+                # Get existing network object IDs for later use
+                for obj in existing_network_objects:
+                    for template_net in network_objects:
+                        if obj.get('name') == template_net['name']:
+                            self.network_objects_id[obj.get('name')] = obj.get('id')
+                
                 return True
             
             # Create host object if it doesn't exist
@@ -211,7 +222,7 @@ class Step04_FTD_CONF:
                     return False
             else:
                 # Get existing host ID for later use
-                for obj in existing_network_objects:
+                for obj in existing_host_objects:
                     if obj.get('name') == host_object['name']:
                         self.gw_host_id = obj.get('id')
                         break
@@ -247,13 +258,13 @@ class Step04_FTD_CONF:
                         logger.error(f"Failed to create network objects. Status code: {response_post.status_code}")
                         logger.error(response_post.text)
                         return False
-                        
-            # Get existing network object IDs for later use
+
+            # ALWAYS populate network object IDs for existing objects (this was missing)
             for obj in existing_network_objects:
                 for template_net in network_objects:
                     if obj.get('name') == template_net['name']:
                         self.network_objects_id[obj.get('name')] = obj.get('id')
-    
+            
             self.save_report_data_file()
             logger.info("Email report data file updated with host and network objects.")
             return True

@@ -230,6 +230,7 @@ class TemplateUpdater:
             self.default_route_template()
             self.update_ha_standby_template()
             self.update_NAT_template()
+            self.update_psettings_template()
             
             logger.info("All templates updated successfully!")
             return True

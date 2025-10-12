@@ -49,25 +49,27 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         except FileNotFoundError:
             logger.warning("Email report data file not found, using empty data")
             self.email_report_data = {"health_status": [],
-                                      "ha_configuration": [],
+                                      "ha_status": [],
                                       "network_objects": [],
                                        "security_zones": [], 
                                        "interfaces_configured": [], 
                                        "static_routes": [],
                                        "access_policies": [],
                                        "nat_policy": [], 
-                                       "nat_rules": []}
+                                       "nat_rules": [],
+                                       "platform_settings": []}
         except Exception as e:
             logger.error(f"Error loading email report data: {e}")
             self.email_report_data = {"health_status": [],
-                                       "ha_configuration": [],
+                                       "ha_status": [],
                                        "network_objects": [],
                                        "security_zones": [],
                                        "interfaces_configured": [],
                                        "static_routes": [],
                                        "access_policies": [],
                                        "nat_policy": [], 
-                                       "nat_rules": []}
+                                       "nat_rules": [],
+                                       "platform_settings": []}
     def _generate_report_body(self):
         """
         Generate the HTML body for the email report.
@@ -81,6 +83,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         access_policies = self.email_report_data.get("access_policies", [])
         ha_status = self.email_report_data.get("ha_status", [])
         health_status = self.email_report_data.get("health_status", [])
+        platform_settings = self.email_report_data.get("platform_settings", [])
 
         # Generate table for health status
         health_table = ""
@@ -183,7 +186,17 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{policy.get('status', 'N/A')}</td>
             </tr>
             """
-
+        # Generate table for ALL platform settings assignments
+        platform_settings_table = ""
+        for setting in platform_settings:
+            platform_settings_table += f"""
+            <tr>
+                <td>{setting.get('name', 'N/A')}</td>
+                <td>{setting.get('type', 'N/A')}</td>
+                <td>{setting.get('id', 'N/A')}</td>
+                <td>{setting.get('status', 'N/A')}</td>
+            </tr>
+            """
         # Get basic deployment info
         ha_name = os.getenv('FW_HOSTNAME_01', 'Unknown') + '_HA'
         fmc_ip = os.getenv('FMC_IP', 'N/A')
@@ -275,6 +288,16 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 </tr>
                 {routes_table}
             </table>
+            <h3 style="color: #4682B4;">Platform Settings Assigned:</h3>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background-color: #f0f0f0;">
+                    <th>Platform Setting Name</th>
+                    <th>Type</th>
+                    <th>Platform Setting ID</th>
+                    <th>Status</th>
+                </tr>
+                {platform_settings_table}
+            </table>
             <h3 style="color: #4682B4;">Access Policies Created:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
@@ -364,12 +387,13 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         try:
             logger.info("Starting email report generation...")
             logger.info(f"Found {len(self.email_report_data.get('health_status', []))} health status entries in report")
-            logger.info(f"Found {len(self.email_report_data.get('ha_configuration', []))} HA configurations in report")
+            logger.info(f"Found {len(self.email_report_data.get('ha_status', []))} HA configurations in report")
             logger.info(f"Found {len(self.email_report_data.get('network_objects', []))} network objects in report")
             logger.info(f"Found {len(self.email_report_data.get('security_zones', []))} security zones in report")
             logger.info(f"Found {len(self.email_report_data.get('interfaces_configured', []))} interfaces in report")
             logger.info(f"Found {len(self.email_report_data.get('static_routes', []))} static routes in report")
             logger.info(f"Found {len(self.email_report_data.get('access_policies', []))} access policies in report")
+            logger.info(f"Found {len(self.email_report_data.get('platform_settings', []))} platform settings in report")
             logger.info(f"Found {len(self.email_report_data.get('nat_policy', []))} NAT policies in report")
             logger.info(f"Found {len(self.email_report_data.get('nat_rules', []))} NAT rules in report")
             

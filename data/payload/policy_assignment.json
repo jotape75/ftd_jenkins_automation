@@ -13,5 +13,21 @@
                 "name": "FTD_DEVICE_NAME_PLACEHOLDER"
             }
         ]
+    },
+
+    "psettings_policy_assignment": {
+        "type": "PolicyAssignment",
+        "policy": {
+            "type": "FTDPlatformSettingsPolicy",
+            "name": "PLATFORM_SETTINGS_NAME",
+            "id": "PLATFORM_SETTINGS_POLICY_ID_PLACEHOLDER"
+        },
+        "targets": [
+            {
+                "id": "FTD_DEVICE_ID_PLACEHOLDER",
+                "type": "Device",
+                "name": "FTD_DEVICE_NAME_PLACEHOLDER"
+            }
+        ]
     }
 }

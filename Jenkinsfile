@@ -79,6 +79,9 @@ pipeline {
 
         // Default route
         string(name: 'DEFAULT_ROUTE_GATEWAY', defaultValue: '10.10.10.1', description: 'Default Route Gateway')
+        
+        //Platform settings assignment
+        string(name: 'PLATFORM_SETTINGS_NAME', defaultValue: 'Global Platform Settings', description: 'Platform Settings Name in FMC')
     }
     
     stages {
@@ -144,6 +147,7 @@ pipeline {
 
                     // Default route
                     env.DEFAULT_ROUTE_GATEWAY = params.DEFAULT_ROUTE_GATEWAY
+                    env.PLATFORM_SETTINGS_NAME = params.PLATFORM_SETTINGS_NAME
 
                     sh 'python3 src/update_templates.py'
                     

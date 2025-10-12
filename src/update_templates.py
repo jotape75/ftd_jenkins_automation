@@ -194,6 +194,23 @@ class TemplateUpdater:
             f.write(content)
 
         logger.info("Updated NAT template with Jenkins parameters")
+    def update_psettings_template(self):
+        
+        """Update Platform Settings template with Jenkins parameters"""
+
+        template_file = f"{self.data_dir}/policy_assignment.json"
+
+        with open(template_file, 'r') as f:
+            content = f.read()
+
+        # Replace placeholders with Jenkins environment variables
+        content = content.replace('{PLATFORM_SETTINGS_NAME}', os.getenv('PLATFORM_SETTINGS_NAME', ''))
+
+        # Write back
+        with open(template_file, 'w') as f:
+            f.write(content)
+
+        logger.info("Updated Platform Settings template with Jenkins parameters")
         
     def execute(self):
         """Execute all template updates"""

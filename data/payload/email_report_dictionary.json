@@ -19,5 +19,6 @@
     "interfaces_configured": [],
     "static_routes": [],
     "ha_status": [],
-    "health_status": []
+    "health_status": [],
+    "platform_settings": []
 }

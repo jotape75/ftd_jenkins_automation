@@ -76,7 +76,7 @@ class Step04_FTD_CONF:
         self.fmc_nat_policy_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies"
         self.fmc_nat_rule_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdnatpolicies/{{nat_policy_id}}/autonatrules"
         self.fmc_policy_assignment_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/assignment/policyassignments"
-    
+        self.fmc_platform_settings_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/policy/ftdplatformsettingspolicies"
     def load_devices_templates(self):
         from utils_ftd import FTD_HA_TEMPLATE, \
             FTD_SEC_ZONES_TEMPLATE, \
@@ -496,6 +496,48 @@ class Step04_FTD_CONF:
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")
             return False
+    def platform_settings_assignment(self):
+        # Assign platform settings to device
+        platform_settings = self.fmc_policy_assignment["psettings_policy_assignment"]
+        psettings_report = self.email_report_data.get("platform_settings", [])
+        dev_id ="75bbe1f6-a469-11f0-8c2e-c61e777f4f0a" #temporary, to be removed
+
+        try:
+            response_platform_settings = requests.get(self.fmc_platform_settings_url, headers=self.rest_api_headers, verify=False)
+            response_platform_settings.raise_for_status()
+            platform_settings_list = response_platform_settings.json().get('items', [])
+            platform_settings_id = None
+            platform_settings_name = None
+            for setting in platform_settings_list:
+                if setting.get('name') == platform_settings["policy"]["name"]:
+                    platform_settings_id = setting.get('id')
+                    platform_settings_name = setting.get('name')
+                    break
+            platform_settings["targets"][0]["name"] = self.ftd_ha_tmp['ha_payload']['name']
+            platform_settings["policy"]["name"] = platform_settings_name
+            platform_settings["policy"]["id"] = platform_settings_id
+            #platform_settings["targets"][0]["id"] = self.primary_status_id
+            platform_settings["targets"][0]["id"] = dev_id #temporary, to be removed
+            response_policy_assignment = requests.post(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(platform_settings), verify=False)
+            if response_policy_assignment.status_code in [200, 201]:
+                logger.info(f"Platform settings '{platform_settings_name}' assigned to device {self.ftd_ha_tmp['ha_payload']['name']} successfully.")
+                psettings_report.append({
+                    "name": platform_settings_name,
+                    "id": platform_settings_id,
+                    "type": "Platform Settings",
+                    "status": "assigned"
+                })
+                self.save_report_data_file()
+                logger.info("Email report data file updated with platform settings assignment.")
+                return True
+            else:
+                logger.error(f"Failed to assign Platform settings. Status: {response_policy_assignment.status_code}")
+                logger.error(response_policy_assignment.text)
+                return False
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error: {e}")
+            return False
+
     def execute(self):
         """
         Execute FTD zone, interface and route configuration.
@@ -537,6 +579,11 @@ class Step04_FTD_CONF:
             if not self.configure_NAT():
                 logger.error("Failed to configure NAT")
                 return False
+            if not self.platform_settings_assignment():
+                logger.error("Failed to assign platform settings")
+                return False
+            
+             # All steps succeeded
 
             logger.info("FTD configuration completed successfully!")
             return True

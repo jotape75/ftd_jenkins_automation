@@ -154,10 +154,11 @@ class Step03_HAConfig:
             # poll_interval = 10
             self.load_devices_templates()
            
-            self._initialize_api_urls()
         
             self.fmc_ip = os.getenv('FMC_IP')
             self.ha_interface = os.getenv('HA_INTERFACE')
+            
+            self._initialize_api_urls()
 
             with open('api_keys_data.pkl', 'rb') as f:
                 self.rest_api_headers = pickle.load(f)

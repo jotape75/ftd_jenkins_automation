@@ -79,7 +79,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         nat_rules = self.email_report_data.get("nat_rules", [])
         nat_policy = self.email_report_data.get("nat_policy", [])
         access_policies = self.email_report_data.get("access_policies", [])
-        ha_configuration = self.email_report_data.get("ha_configuration", [])
+        ha_status = self.email_report_data.get("ha_status", [])
         health_status = self.email_report_data.get("health_status", [])
 
         # Generate table for health status
@@ -95,7 +95,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
 
         # Generate table for HA status
         ha_table = ""
-        for ha in ha_configuration:
+        for ha in ha_status:
             ha_table += f"""
             <tr>
                 <td>{ha.get('ha_name', 'N/A')}</td>

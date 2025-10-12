@@ -13,6 +13,7 @@ Key Features:
 - Comprehensive error handling and logging
 """
 
+from importlib import metadata
 import requests
 import logging
 import pickle
@@ -67,6 +68,7 @@ class Step05_FMC_DEPLOYMENT:
         self.deployable_devices = f'https://{self.fmc_ip}/api/fmc_config/v1/domain/default/deployment/deployabledevices'
         self.deployment_requests = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/deployment/deploymentrequests"
         self.monitor_deployments = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/deployment/jobhistories?expanded=true"
+        self.fmc_ha_status = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devicehapairs/ftddevicehapairs?expanded=true"
 
     def devices_health_status(self):
         device_health_report = self.email_report_data.get("health_status", [])
@@ -95,6 +97,40 @@ class Step05_FMC_DEPLOYMENT:
         self.save_report_data_file()
         logger.info("Saved device health status to report data file")
         return True
+    def ha_status(self):
+
+        ha_status_report = self.email_report_data.get("ha_status", [])
+        try:
+            ha_payload = self.ftd_ha_tmp["ha_payload"]
+            ha_payload_name = ha_payload.get("name")
+            response_ha = requests.get(self.fmc_ha_status, headers=self.rest_api_headers, verify=False)
+            response_ha.raise_for_status()
+            ha_json = response_ha.json().get('items', [])
+            ha_item = ha_json[0]
+            ha_name = ha_item.get('name')
+            metadata = ha_item.get('metadata', {})
+
+            if ha_name == ha_payload_name:
+                primary_device = metadata["primaryStatus"]["device"]["name"]
+                secondary_device = metadata["secondaryStatus"]["device"]["name"]
+                primary_status = metadata["primaryStatus"]["currentStatus"]
+                secondary_status = metadata["secondaryStatus"]["currentStatus"]
+
+
+                ha_status_report.append({
+                    'ha_name': ha_name,
+                    'primary_device': primary_device,
+                    'secondary_device': secondary_device,
+                    'primary_status': primary_status,
+                    'secondary_status': secondary_status
+                })
+                self.save_report_data_file()
+                logger.info("Saved HA status to report data file")
+                return True
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching HA status: {e}")
+            return False    
+
     def final_deployment_check(self):
         try:
              ### GET Deployable devices ###
@@ -205,6 +241,9 @@ class Step05_FMC_DEPLOYMENT:
             
             if not self.devices_health_status():
                logger.error("Failed to get devices health status")
+               return False
+            if not self.ha_status():
+               logger.error("Failed to get HA status")
                return False
             
             logger.info("Final deployment completed successfully")

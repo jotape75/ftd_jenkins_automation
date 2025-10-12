@@ -18,6 +18,6 @@
     "nat_rules": [],
     "interfaces_configured": [],
     "static_routes": [],
-    "ha_configuration": [],              
+    "ha_status": [],
     "health_status": []
 }

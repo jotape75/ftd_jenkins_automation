@@ -47,22 +47,14 @@ class Step03_HAConfig:
         from utils_ftd import FTD_HA_TEMPLATE, FTD_DEVICES_TEMPLATE,EMAIL_REPORT_DATA_FILE
 
         with open(FTD_HA_TEMPLATE, 'r') as f0, \
-             open(FTD_DEVICES_TEMPLATE, 'r') as f1, \
-             open(EMAIL_REPORT_DATA_FILE, 'r') as f2:
+             open(FTD_DEVICES_TEMPLATE, 'r') as f1
 
 
             self.ftd_ha_tmp = json.load(f0)
             logger.info("Loaded FTD HA template")
             self.ftd_devices_tmp = json.load(f1)
             logger.info("Loaded FTD devices template")
-            self.email_report_data = json.load(f2)
-            logger.info("Loaded email report data")
-    def save_report_data_file(self):
-        from utils_ftd import EMAIL_REPORT_DATA_FILE
 
-         # Save email report data dictionary to JSON file
-        with open(EMAIL_REPORT_DATA_FILE, 'w') as f:
-            json.dump(self.email_report_data, f, indent=4)
     def _initialize_api_urls(self):
 
         """Initialize API URLs after fmc_ip is set"""
@@ -71,8 +63,6 @@ class Step03_HAConfig:
         self.fmc_devices = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords"
         self.fmc_dev_int_url = f"https://{self.fmc_ip}/api/fmc_config/v1/domain/default/devices/devicerecords/{{device_id}}/physicalinterfaces"
     def ha_configuration(self):
-        ha_configuration_report = self.email_report_data.get('ha_configuration', [])
-
         try:
             response_ha = requests.get(self.fmc_devices, headers=self.rest_api_headers, verify=False)
             response_ha.raise_for_status()
@@ -130,22 +120,11 @@ class Step03_HAConfig:
                     response_ha_id.raise_for_status()
                     ha_json = response_ha_id.json()
                     meta = ha_json.get('metadata', {})
-                    primary_device = ha_json["metadata"]["primaryStatus"]["device"]["name"]
-                    secondary_device = ha_json["metadata"]["secondaryStatus"]["device"]["name"]
                     primary_status = meta.get('primaryStatus', {}).get('currentStatus', '').lower()
                     secondary_status = meta.get('secondaryStatus', {}).get('currentStatus', '').lower()
                     logger.info(f"HA status: primary={primary_status}, secondary={secondary_status}")
                     if primary_status == "active" and secondary_status == "standby":
-                        ha_configuration_report.append({
-                            "ha_name": ha_payload['name'],
-                            "primary_device": primary_device,
-                            "secondary_device": secondary_device,
-                            "primary_status": primary_status,
-                            "secondary_status": secondary_status,
-                        })
                         logger.info("HA added successfully.")
-                        self.save_report_data_file()
-                        logger.info("Email report data file updated with HA configuration.")
                         return True
                     if primary_status == "failed" or secondary_status == "failed":
                         logger.info("HA failed - Please check logs.")

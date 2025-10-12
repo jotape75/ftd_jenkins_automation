@@ -134,7 +134,7 @@ class Step04_FTD_CONF:
             #Check if object already exists
             response_get = requests.get(self.fmc_obj_network_url, headers=self.rest_api_headers, verify=False)
             response_get.raise_for_status()
-            existing_network_objects = response_get.json().get('items', [])
+            existing_network_objects = response_get.json()
             for obj in existing_network_objects:
                 obj_name = obj['name']
                 obj_ip = obj['value']

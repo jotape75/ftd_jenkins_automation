@@ -247,7 +247,13 @@ class Step04_FTD_CONF:
                         logger.error(f"Failed to create network objects. Status code: {response_post.status_code}")
                         logger.error(response_post.text)
                         return False
-            
+                        
+            # Get existing network object IDs for later use
+            for obj in existing_network_objects:
+                for template_net in network_objects:
+                    if obj.get('name') == template_net['name']:
+                        self.network_objects_id[obj.get('name')] = obj.get('id')
+    
             self.save_report_data_file()
             logger.info("Email report data file updated with host and network objects.")
             return True

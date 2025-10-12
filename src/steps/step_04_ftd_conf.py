@@ -255,10 +255,8 @@ class Step04_FTD_CONF:
                 
                 if networks_to_create:
                     logger.info(f"Creating {len(networks_to_create)} network objects")
-                    
-                    # Create as bulk operation
-                    bulk_payload = {"items": networks_to_create}
-                    response_post = requests.post(self.fmc_obj_net_url, headers=self.rest_api_headers, data=json.dumps(bulk_payload), verify=False)
+                   
+                    response_post = requests.post(self.fmc_obj_net_url, headers=self.rest_api_headers, data=json.dumps(networks_to_create), verify=False)
                     net_obj_creation_re = response_post.json()
                     
                     if response_post.status_code in [200, 201]:

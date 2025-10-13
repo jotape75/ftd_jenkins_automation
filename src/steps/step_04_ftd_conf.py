@@ -196,7 +196,8 @@ class Step04_FTD_CONF:
                             "name": host_object['name'],
                             "IP": host_object['value'],
                             "type": "Host", 
-                            "id": self.gw_host_id
+                            "id": self.gw_host_id,
+                            "status": "existing"
                         })
                         break
                 
@@ -209,7 +210,8 @@ class Step04_FTD_CONF:
                                 "name": obj.get('name'),
                                 "IP": obj.get('value'),
                                 "type": "Network",
-                                "id": obj.get('id')
+                                "id": obj.get('id'),
+                                "status": "existing"
                             })
                 
                 return True
@@ -226,7 +228,8 @@ class Step04_FTD_CONF:
                         "name": host_object['name'],
                         "IP": host_object['value'],
                         "type": "Host", 
-                        "id": self.gw_host_id
+                        "id": self.gw_host_id,
+                        "status": "created"
                     })
                     logger.info(f"Host object {host_object['name']} - {host_object['value']} created with ID: {self.gw_host_id}.")
                 else:
@@ -242,7 +245,8 @@ class Step04_FTD_CONF:
                             "name": host_object['name'],
                             "IP": host_object['value'],
                             "type": "Host", 
-                            "id": self.gw_host_id
+                            "id": self.gw_host_id,
+                            "status": "existing"
                         })
                         break
             
@@ -269,14 +273,15 @@ class Step04_FTD_CONF:
                                 "name": item['name'],
                                 "IP": item['value'],
                                 "type": "Network",
-                                "id": item['id']
+                                "id": item['id'],
+                                "status": "created"
                             })
                     else:
                         logger.error(f"Failed to create network objects. Status code: {response_post.status_code}")
                         logger.error(response_post.text)
                         return False
 
-            # ALWAYS populate network object IDs for existing objects (this was missing)
+            # ALWAYS populate network object IDs for existing objects
             for obj in existing_network_objects:
                 for template_net in network_objects:
                     if obj.get('name') == template_net['name']:
@@ -285,7 +290,8 @@ class Step04_FTD_CONF:
                             "name": obj.get('name'),
                             "IP": obj.get('value'),
                             "type": "Network",
-                            "id": obj.get('id')
+                            "id": obj.get('id'),
+                            "status": "existing"
                         })
             
             self.save_report_data_file()
@@ -344,7 +350,7 @@ class Step04_FTD_CONF:
                                "name": existing_zone.get('name'),
                                "type": "Security Zone",
                                "id": existing_zone.get('id'),
-                               "status": "Already existed"
+                               "status": "existing"
                             })
                             break
             self.save_report_data_file()
@@ -400,7 +406,8 @@ class Step04_FTD_CONF:
                         "ifname": config["ifname"],
                         "ip_address": config["ip_address"],
                         "netmask": config["netmask"],
-                        "id": interface_id
+                        "id": interface_id,
+                        "status": "created"
                     })
                 else:
                     logger.info(f"Failed to assign security zone to interface {interface_name} on device {primary_name}. Status code: {response_put.status_code}")
@@ -483,7 +490,8 @@ class Step04_FTD_CONF:
                     "source": any_ipv4_name or 'any-ipv4',  # Safe fallback
                     "next_hop": static_route_payload.get('gateway', {}).get('object', {}).get('name', 'Gateway'),  # Safe nested access
                     "type": "Static Route",
-                    "id": route_response.get('id')
+                    "id": route_response.get('id'),
+                    "status": "created"
                 })
                 self.save_report_data_file()
                 logger.info("Email report data file updated with static route.")
@@ -592,7 +600,8 @@ class Step04_FTD_CONF:
                             "id": nat_rule_id,
                             "source_interface": INSIDE_SEC_ZONE_NAME,
                             "destination_interface": OUTSIDE_SEC_ZONE_NAME,
-                            "original_network": INSIDE_NET_NAME
+                            "original_network": INSIDE_NET_NAME,
+                            "status": "created"
                         })
                     logger.info(f"NAT rule created successfully - ID: {nat_rule_id}")
                     self.save_report_data_file()

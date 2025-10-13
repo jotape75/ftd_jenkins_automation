@@ -115,6 +115,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{obj.get('type', 'N/A')}</td>
                 <td>{obj.get('IP', obj.get('value', 'N/A'))}</td>
                 <td>{obj.get('id', 'N/A')}</td>
+                <td>{obj.get('status', 'N/A')}</td>
             </tr>
             """
         # Generate table for ALL security zones
@@ -137,6 +138,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
             <td>{intf.get('ip_address', 'N/A')}</td>
             <td>{intf.get('netmask', 'N/A')}</td>
             <td>{intf.get('standby_ip', 'N/A')}</td>
+            <td>{intf.get('status', 'N/A')}</td>
             </tr>
             """
         # Generate table for ALL static routes
@@ -149,6 +151,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{route.get('next_hop', 'N/A')}</td>
                 <td>{route.get('type', 'N/A')}</td>
                 <td>{route.get('id', 'N/A')}</td>
+                <td>{route.get('status', 'N/A')}</td>
             </tr>
             """
         # Generate table for ALL NAT policies and rules
@@ -173,6 +176,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{rule.get('source_interface', 'N/A')}</td>
                 <td>{rule.get('destination_interface', 'N/A')}</td>
                 <td>{rule.get('original_network', 'N/A')}</td>
+                <td>{rule.get('status', 'N/A')}</td>
             </tr>
             """
         # Generate table for ALL access policies

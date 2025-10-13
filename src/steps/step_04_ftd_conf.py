@@ -692,28 +692,28 @@ class Step04_FTD_CONF:
                             logger.error(f"Failed to assign Platform settings. Status: {response_pa_length.status_code}")
                             logger.error(response_pa_length.text)
                             return False
+                else:
+                    platform_settings["targets"][0]["name"] = self.ftd_ha_tmp['ha_payload']['name']
+                    platform_settings["policy"]["name"] = platform_settings_name
+                    platform_settings["policy"]["id"] = platform_settings_id
+                    platform_settings["targets"][0]["id"] = self.primary_status_id
+                    #platform_settings["targets"][0]["id"] = dev_id #temporary, to be removed
+                    response_policy_assignment = requests.post(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(platform_settings), verify=False)
+                    if response_policy_assignment.status_code in [200, 201]:
+                        logger.info(f"Platform settings '{platform_settings_name}' assigned to device {self.ftd_ha_tmp['ha_payload']['name']} successfully.")
+                        psettings_report.append({
+                            "name": platform_settings_name,
+                            "id": platform_settings_id,
+                            "type": "Platform Settings",
+                            "status": "assigned"
+                        })
+                        self.save_report_data_file()
+                        logger.info("Email report data file updated with platform settings assignment.")
+                        return True
                     else:
-                        platform_settings["targets"][0]["name"] = self.ftd_ha_tmp['ha_payload']['name']
-                        platform_settings["policy"]["name"] = platform_settings_name
-                        platform_settings["policy"]["id"] = platform_settings_id
-                        platform_settings["targets"][0]["id"] = self.primary_status_id
-                        #platform_settings["targets"][0]["id"] = dev_id #temporary, to be removed
-                        response_policy_assignment = requests.post(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(platform_settings), verify=False)
-                        if response_policy_assignment.status_code in [200, 201]:
-                            logger.info(f"Platform settings '{platform_settings_name}' assigned to device {self.ftd_ha_tmp['ha_payload']['name']} successfully.")
-                            psettings_report.append({
-                                "name": platform_settings_name,
-                                "id": platform_settings_id,
-                                "type": "Platform Settings",
-                                "status": "assigned"
-                            })
-                            self.save_report_data_file()
-                            logger.info("Email report data file updated with platform settings assignment.")
-                            return True
-                        else:
-                            logger.error(f"Failed to assign Platform settings. Status: {response_policy_assignment.status_code}")
-                            logger.error(response_policy_assignment.text)
-                            return False
+                        logger.error(f"Failed to assign Platform settings. Status: {response_policy_assignment.status_code}")
+                        logger.error(response_policy_assignment.text)
+                        return False
                         
         except requests.exceptions.RequestException as e:
             logger.error(f"Error: {e}")

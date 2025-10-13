@@ -16,6 +16,7 @@ Key Features:
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from datetime import datetime
 import requests
 import logging
 import json
@@ -70,6 +71,19 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                                        "nat_policy": [], 
                                        "nat_rules": [],
                                        "platform_settings": []}
+    def get_health_status_color(self, health):
+        if health in ['green']:
+            return 'color: green;'
+        elif health in ['yellow']:
+            return 'color: yellow;'
+        elif health in ['red']:
+            return 'color: red;'
+        elif health in ['recovered']:
+            return 'color: blue;'
+        else:
+            return 'color: black;'
+
+    
     def _generate_report_body(self):
         """
         Generate the HTML body for the email report.
@@ -84,15 +98,16 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         ha_status = self.email_report_data.get("ha_status", [])
         health_status = self.email_report_data.get("health_status", [])
         platform_settings = self.email_report_data.get("platform_settings", [])
+        deployment_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Generate table for health status
         health_table = ""
         for health in health_status:
             health_table += f"""
             <tr>
-                <td>{health.get('device_name', 'N/A')}</td>
-                <td>{health.get('health_status', 'N/A')}</td>
-                <td>{health.get('deployment_status', 'N/A')}</td>
+                <td><strong>{health.get('device_name', 'N/A')}</strong></td>
+                <td style="{self.get_health_status_color(health.get('health_status', 'N/A'))}; font-weight: bold;">{health.get('health_status', 'N/A')}</td>
+                <td><strong>{health.get('deployment_status', 'N/A')}</strong></td>
             </tr>
             """
 
@@ -102,7 +117,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
             ha_table += f"""
             <tr>
                 <td>{ha.get('ha_name', 'N/A')}</td>
-                <td>{ha.get('primary_device', 'N/A')} - {ha.get('primary_status', 'N/A')}</td>
+                <td><strong>{ha.get('primary_device', 'N/A')}</strong> - {ha.get('primary_status', 'N/A')}</td>
                 <td>{ha.get('secondary_device', 'N/A')} - {ha.get('secondary_status', 'N/A')}</td>
             </tr>
             """
@@ -111,11 +126,11 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         for obj in network_objects:
             network_table += f"""
             <tr>
-                <td>{obj.get('name', 'N/A')}</td>
+                <td><strong>{obj.get('name', 'N/A')}</strong></td>
                 <td>{obj.get('type', 'N/A')}</td>
                 <td>{obj.get('IP', obj.get('value', 'N/A'))}</td>
                 <td>{obj.get('id', 'N/A')}</td>
-                <td>{obj.get('status', 'N/A')}</td>
+                <td><strong>{obj.get('status', 'N/A')}</strong></td>
             </tr>
             """
         # Generate table for ALL security zones
@@ -123,10 +138,10 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         for zone in security_zones:
             security_zone_table += f"""
             <tr>
-                <td>{zone.get('name', 'N/A')}</td>
+                <td><strong>{zone.get('name', 'N/A')}</strong></td>
                 <td>{zone.get('type', 'N/A')}</td>
                 <td>{zone.get('id', 'N/A')}</td>
-                <td>{zone.get('status', 'N/A')}</td>
+                <td><strong>{zone.get('status', 'N/A')}</strong></td>
             </tr>
             """
         # Generate table for ALL interfaces
@@ -134,11 +149,11 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
         for intf in interfaces_configured:
             interfaces_table += f"""
             <tr>
-            <td>{intf.get('ifname', 'N/A')}</td>
+            <td><strong>{intf.get('ifname', 'N/A')}</strong></td>
             <td>{intf.get('ip_address', 'N/A')}</td>
             <td>{intf.get('netmask', 'N/A')}</td>
             <td>{intf.get('standby_ip', 'N/A')}</td>
-            <td>{intf.get('status', 'N/A')}</td>
+            <td><strong>{intf.get('status', 'N/A')}</strong></td>
             </tr>
             """
         # Generate table for ALL static routes
@@ -151,7 +166,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{route.get('next_hop', 'N/A')}</td>
                 <td>{route.get('type', 'N/A')}</td>
                 <td>{route.get('id', 'N/A')}</td>
-                <td>{route.get('status', 'N/A')}</td>
+                <td><strong>{route.get('status', 'N/A')}</strong></td>
             </tr>
             """
         # Generate table for ALL NAT policies and rules
@@ -163,7 +178,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{policy.get('name', 'N/A')}</td>
                 <td>{policy.get('type', 'N/A')}</td>
                 <td>{policy.get('id', 'N/A')}</td>
-                <td>{policy.get('status', 'N/A')}</td>
+                <td><strong>{policy.get('status', 'N/A')}</strong></td>
             </tr>
             """
         nat_rules_table = ""
@@ -176,7 +191,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{rule.get('source_interface', 'N/A')}</td>
                 <td>{rule.get('destination_interface', 'N/A')}</td>
                 <td>{rule.get('original_network', 'N/A')}</td>
-                <td>{rule.get('status', 'N/A')}</td>
+                <td><strong>{rule.get('status', 'N/A')}</strong></td>
             </tr>
             """
         # Generate table for ALL access policies
@@ -187,7 +202,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{policy.get('name', 'N/A')}</td>
                 <td>{policy.get('type', 'N/A')}</td>
                 <td>{policy.get('id', 'N/A')}</td>
-                <td>{policy.get('status', 'N/A')}</td>
+                <td><strong>{policy.get('status', 'N/A')}</strong></td>
             </tr>
             """
         # Generate table for ALL platform settings assignments
@@ -198,7 +213,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <td>{setting.get('name', 'N/A')}</td>
                 <td>{setting.get('type', 'N/A')}</td>
                 <td>{setting.get('id', 'N/A')}</td>
-                <td>{setting.get('status', 'N/A')}</td>
+                <td><strong>{setting.get('status', 'N/A')}</strong></td>
             </tr>
             """
         # Get basic deployment info
@@ -224,6 +239,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 <tr><td><strong>FTD device 02:</strong></td><td>{ftd_device_02} - {ftd_device_ip_02}</td></tr>
                 <tr><td><strong>HA Pair Name:</strong></td><td>{ha_name}</td></tr>
                 <tr><td><strong>FMC IP:</strong></td><td>{fmc_ip}</td></tr>
+                <tr><td><strong>Deployment Time:</strong></td><td>{deployment_time}</td></tr>
                 <tr><td><strong>Total Network Objects:</strong></td><td>{len(network_objects)}</td></tr>
                 <tr><td><strong>Total Security Zones:</strong></td><td>{len(security_zones)}</td></tr>
                 <tr><td><strong>Total Interfaces Configured:</strong></td><td>{len(interfaces_configured)}</td></tr>
@@ -250,18 +266,19 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 </tr>
                 {ha_table}
             </table>
-            <h3 style="color: #4682B4;">Network Objects Created:</h3>
+            <h3 style="color: #4682B4;">Network Objects:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
                     <th>Object Name</th>
                     <th>Type</th>
                     <th>IP/Network</th>
                     <th>Object ID</th>
+                    <th>Status</th>
                 </tr>
                 {network_table}
             </table>
             
-            <h3 style="color: #4682B4;">Security Zones Created:</h3>
+            <h3 style="color: #4682B4;">Security Zones:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
                     <th>Zone Name</th>
@@ -271,13 +288,14 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 </tr>
                 {security_zone_table}
             </table>
-            <h3 style="color: #4682B4;">Interfaces Configured:</h3>
+            <h3 style="color: #4682B4;">Interfaces:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
                     <th>Interface Name</th>
                     <th>IP Address</th>
                     <th>Subnet Mask</th>
                     <th>Standby IP</th>
+                    <th>Status</th>
                 </tr>
                 {interfaces_table}
             </table>
@@ -289,10 +307,11 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                     <th>Next Hop</th>
                     <th>Type</th>
                     <th>Route ID</th>
+                    <th>Status</th>
                 </tr>
                 {routes_table}
             </table>
-            <h3 style="color: #4682B4;">Platform Settings Assigned:</h3>
+            <h3 style="color: #4682B4;">Platform Settings:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
                     <th>Platform Setting Name</th>
@@ -302,7 +321,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 </tr>
                 {platform_settings_table}
             </table>
-            <h3 style="color: #4682B4;">Access Policies Created:</h3>
+            <h3 style="color: #4682B4;">Access Policies:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
                     <th>Policy Name</th>
@@ -312,7 +331,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 </tr>
                 {access_policy_table}
             </table>
-            <h3 style="color: #4682B4;">NAT Policies Created:</h3>
+            <h3 style="color: #4682B4;">NAT Policies:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
                     <th>Policy Name</th>
@@ -323,7 +342,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                 {nat_policy_table}
             </table>
 
-            <h3 style="color: #4682B4;">NAT Rules Created:</h3>
+            <h3 style="color: #4682B4;">NAT Rules:</h3>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
                 <tr style="background-color: #f0f0f0;">
                     <th>Rule Name</th>
@@ -332,6 +351,7 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                     <th>Source Interface</th>
                     <th>Destination Interface</th>
                     <th>Original Network</th>
+                    <th>Status</th>
                 </tr>
                 {nat_rules_table}
             </table>
@@ -350,30 +370,31 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
             smtp_port = 587
             sender_email = os.getenv('GMAIL_USERNAME')
             sender_password = os.getenv('GMAIL_APP_PASSWORD')
-            recipient_email = os.getenv('EMAIL_REPORT_DESTINATION')
+            email_destinations = os.getenv('EMAIL_REPORT_DESTINATION', '').split(',')
+            email_destinations = [email.strip() for email in email_destinations if email.strip()]
 
-            if not all([sender_email, sender_password, recipient_email]):
+            if not all([sender_email, sender_password, email_destinations]):
                 logger.error("Missing email configuration. Check environment variables.")
                 return False
+            for email in email_destinations:
+                # Create message
+                msg = MIMEMultipart()
+                msg['From'] = sender_email
+                msg['To'] = email
+                msg['Subject'] = f"FTD Configuration Report - {os.getenv('FW_HOSTNAME_01', 'Unknown')}_HA"
 
-            # Create message
-            msg = MIMEMultipart()
-            msg['From'] = sender_email
-            msg['To'] = recipient_email
-            msg['Subject'] = f"FTD Configuration Report - {os.getenv('FW_HOSTNAME_01', 'Unknown')}_HA"
+                # Email body with configuration summary
+                body = self._generate_report_body()
+                msg.attach(MIMEText(body, 'html'))
 
-            # Email body with configuration summary
-            body = self._generate_report_body()
-            msg.attach(MIMEText(body, 'html'))
+                # Send email
+                server = smtplib.SMTP(smtp_server, smtp_port)
+                server.starttls()
+                server.login(sender_email, sender_password)
+                server.send_message(msg)
+                server.quit()
 
-            # Send email
-            server = smtplib.SMTP(smtp_server, smtp_port)
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-            server.quit()
-            
-            logger.info(f"Configuration report sent to {recipient_email}")
+                logger.info(f"Configuration report sent to {email}")
             return True
         except Exception as e:
             logger.error(f"Failed to send email: {e}")

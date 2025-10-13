@@ -31,7 +31,7 @@ pipeline {
         GMAIL_APP_PASSWORD = credentials('gmail-app-password')
     }
     parameters {
-        string(name: 'EMAIL_REPORT_DESTINATION', defaultValue: '', description: 'Add email to receive the report')
+        string(name: 'EMAIL_REPORT_DESTINATION', defaultValue: '', description: 'Add email addresses to receive the report (comma-separated for multiple recipients)')
         // FMC parameters
         string(name: 'FMC_IP', defaultValue: '192.168.0.201', description: 'FMC IP Address')
         string(name: 'FMC_USERNAME', defaultValue: 'api_user', description: 'FMC Username')

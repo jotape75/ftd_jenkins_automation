@@ -452,7 +452,7 @@ class Step04_FTD_CONF:
     def create_default_route(self):
 
        ## CREATE DEFAULT ROUTE ###
-        static_routes = self.email_report_data.get("static_routes", [])
+        # static_routes = self.email_report_data.get("static_routes", [])
         try:
             static_route_payload = self.fmc_route_settings["static_route_payload"]
 
@@ -467,7 +467,7 @@ class Step04_FTD_CONF:
             for obj in obj_networks_all:
                 if obj['name'] == 'any-ipv4':
                     any_ipv4_id = obj['id']
-                    any_ipv4_name = obj['name']
+                    # any_ipv4_name = obj['name']
                     break
             static_route_payload["selectedNetworks"][0]["id"] = any_ipv4_id
             # Create route
@@ -477,15 +477,15 @@ class Step04_FTD_CONF:
                 route_response = response_route.json()
                 logger.info(f"Static route '{static_route_payload['name']}' created successfully.")
                 logger.info(f"Route ID: {route_response.get('id')}")
-                static_routes.append({
-                    "name": static_route_payload['name'],
-                    "source": any_ipv4_name,
-                    "next_hop": static_route_payload['gateway']['object']['name'],
-                    "type": "Static Route",
-                    "id": route_response.get('id')
-                })
-                self.save_report_data_file()
-                logger.info("Email report data file updated with static route.")
+                # static_routes.append({
+                #     "name": static_route_payload['name'],
+                #     "source": any_ipv4_name,
+                #     "next_hop": static_route_payload['gateway']['object']['name'],
+                #     "type": "Static Route",
+                #     "id": route_response.get('id')
+                # })
+                # self.save_report_data_file()
+                # logger.info("Email report data file updated with static route.")
                 return True
             else:
                 logger.info(f"Failed to create static route. Status code: {response_route.status_code}")

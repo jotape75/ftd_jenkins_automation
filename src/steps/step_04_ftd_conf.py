@@ -452,7 +452,7 @@ class Step04_FTD_CONF:
     def create_default_route(self):
 
        ## CREATE DEFAULT ROUTE ###
-        # static_routes = self.email_report_data.get("static_routes", [])
+        static_routes = self.email_report_data.get("static_routes", [])
         try:
             static_route_payload = self.fmc_route_settings["static_route_payload"]
 
@@ -477,15 +477,15 @@ class Step04_FTD_CONF:
                 route_response = response_route.json()
                 logger.info(f"Static route '{static_route_payload['name']}' created successfully.")
                 logger.info(f"Route ID: {route_response.get('id')}")
-                # static_routes.append({
-                #     "name": static_route_payload['name'],
-                #     "source": any_ipv4_name,
-                #     "next_hop": static_route_payload['gateway']['object']['name'],
-                #     "type": "Static Route",
-                #     "id": route_response.get('id')
-                # })
-                # self.save_report_data_file()
-                # logger.info("Email report data file updated with static route.")
+                static_routes.append({
+                    "name": static_route_payload.get('name', 'default_route'),  # Use template name
+                    "source": any_ipv4_name or 'any-ipv4',  # Safe fallback
+                    "next_hop": static_route_payload.get('gateway', {}).get('object', {}).get('name', 'Gateway'),  # Safe nested access
+                    "type": "Static Route",
+                    "id": route_response.get('id')
+                })
+                self.save_report_data_file()
+                logger.info("Email report data file updated with static route.")
                 return True
             else:
                 logger.info(f"Failed to create static route. Status code: {response_route.status_code}")
@@ -643,7 +643,7 @@ class Step04_FTD_CONF:
             platform_settings["policy"]["id"] = platform_settings_id
             #platform_settings["targets"][0]["id"] = self.primary_status_id
             platform_settings["targets"][0]["id"] = dev_id #temporary, to be removed
-            response_policy_assignment = requests.post(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(platform_settings), verify=False)
+            response_policy_assignment = requests.put(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(platform_settings), verify=False)
             if response_policy_assignment.status_code in [200, 201]:
                 logger.info(f"Platform settings '{platform_settings_name}' assigned to device {self.ftd_ha_tmp['ha_payload']['name']} successfully.")
                 psettings_report.append({

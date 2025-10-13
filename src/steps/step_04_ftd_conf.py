@@ -625,7 +625,7 @@ class Step04_FTD_CONF:
         # Assign platform settings to device
         platform_settings = self.fmc_policy_assignment["psettings_policy_assignment"]
         psettings_report = self.email_report_data.get("platform_settings", [])
-        dev_id ="75bbe1f6-a469-11f0-8c2e-c61e777f4f0a" #temporary, to be removed
+        #dev_id ="75bbe1f6-a469-11f0-8c2e-c61e777f4f0a" #temporary, to be removed
 
         try:
             response_platform_settings = requests.get(self.fmc_platform_settings_url, headers=self.rest_api_headers, verify=False)
@@ -641,8 +641,8 @@ class Step04_FTD_CONF:
             platform_settings["targets"][0]["name"] = self.ftd_ha_tmp['ha_payload']['name']
             platform_settings["policy"]["name"] = platform_settings_name
             platform_settings["policy"]["id"] = platform_settings_id
-            #platform_settings["targets"][0]["id"] = self.primary_status_id
-            platform_settings["targets"][0]["id"] = dev_id #temporary, to be removed
+            platform_settings["targets"][0]["id"] = self.primary_status_id
+            #platform_settings["targets"][0]["id"] = dev_id #temporary, to be removed
             response_policy_assignment = requests.put(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(platform_settings), verify=False)
             if response_policy_assignment.status_code in [200, 201]:
                 logger.info(f"Platform settings '{platform_settings_name}' assigned to device {self.ftd_ha_tmp['ha_payload']['name']} successfully.")

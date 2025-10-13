@@ -98,7 +98,6 @@ class Step05_FMC_DEPLOYMENT:
         logger.info("Saved device health status to report data file")
         return True
     def ha_status(self):
-
         ha_status_report = self.email_report_data.get("ha_status", [])
         try:
             ha_payload = self.ftd_ha_tmp["ha_payload"]
@@ -106,28 +105,45 @@ class Step05_FMC_DEPLOYMENT:
             response_ha = requests.get(self.fmc_ha_status, headers=self.rest_api_headers, verify=False)
             response_ha.raise_for_status()
             ha_json = response_ha.json().get('items', [])
-            ha_item = ha_json[0]
+            
+            # Find the matching HA pair instead of assuming index 0
+            ha_item = None
+            for ha in ha_json:
+                if ha.get('name') == ha_payload_name:
+                    ha_item = ha
+                    break
+                    
+            if not ha_item:
+                logger.error(f"HA pair '{ha_payload_name}' not found in FMC")
+                return False
+
             ha_name = ha_item.get('name')
             metadata = ha_item.get('metadata', {})
 
-            if ha_name == ha_payload_name:
-                primary_device = metadata["primaryStatus"]["device"]["name"]
-                secondary_device = metadata["secondaryStatus"]["device"]["name"]
-                primary_status = metadata["primaryStatus"]["currentStatus"]
-                secondary_status = metadata["secondaryStatus"]["currentStatus"]
-                logger.info(f"HA Pair: {ha_name}, Primary: {primary_device} ({primary_status}), Secondary: {secondary_device} ({secondary_status})")
-                ha_status_report.append({
-                    'ha_name': ha_name,
-                    'primary_device': primary_device,
-                    'secondary_device': secondary_device,
-                    'primary_status': primary_status,
-                    'secondary_status': secondary_status
-                })
-                self.save_report_data_file()
-                logger.info("Saved HA status to report data file")
-                return True
+            primary_device = metadata.get("primaryStatus", {}).get("device", {}).get("name", "Unknown")
+            secondary_device = metadata.get("secondaryStatus", {}).get("device", {}).get("name", "Unknown") 
+            primary_status = metadata.get("primaryStatus", {}).get("currentStatus", "Unknown")
+            secondary_status = metadata.get("secondaryStatus", {}).get("currentStatus", "Unknown")
+            
+            logger.info(f"HA Pair: {ha_name}, Primary: {primary_device} ({primary_status}), Secondary: {secondary_device} ({secondary_status})")
+            
+            ha_status_report.append({
+                'ha_name': ha_name,
+                'primary_device': primary_device,
+                'secondary_device': secondary_device,
+                'primary_status': primary_status,
+                'secondary_status': secondary_status
+            })
+            
+            self.save_report_data_file()
+            logger.info("Saved HA status to report data file")
+            return True
+            
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching HA status: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Unexpected error in ha_status: {e}")
             return False    
 
     def final_deployment_check(self):

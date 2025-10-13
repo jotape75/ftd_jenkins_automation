@@ -601,8 +601,8 @@ class Step04_FTD_CONF:
                     nat_policy_assignment["policy"]["name"] = nat_policy_name
                     nat_policy_assignment["policy"]["id"] = nat_policy_id
                     nat_policy_assignment["targets"][0]["name"] = self.ftd_ha_tmp['ha_payload']['name']
-                    #nat_policy_assignment["targets"][0]["id"] = self.primary_status_id
-                    nat_policy_assignment["targets"][0]["id"] = dev_id #temporary, to be removed
+                    nat_policy_assignment["targets"][0]["id"] = self.primary_status_id
+                    #nat_policy_assignment["targets"][0]["id"] = dev_id #temporary, to be removed
                     response_policy_assignment = requests.post(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(nat_policy_assignment), verify=False)
                     if response_policy_assignment.status_code in [200, 201]:
                         logger.info(f"NAT policy '{nat_policy_name}' assigned to device {self.ftd_ha_tmp['ha_payload']['name']} successfully.")

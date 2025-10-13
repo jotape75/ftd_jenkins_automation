@@ -478,7 +478,7 @@ class Step04_FTD_CONF:
                 logger.info(f"Static route '{static_route_payload['name']}' created successfully.")
                 logger.info(f"Route ID: {route_response.get('id')}")
                 static_routes.append({
-                    "name": route_response.get('name'),
+                    "name": static_route_payload['name'],
                     "source": any_ipv4_name,
                     "next_hop": static_route_payload['gateway']['object']['name'],
                     "type": "Static Route",

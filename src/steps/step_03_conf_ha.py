@@ -1,16 +1,18 @@
 """
-Step 2: FTD Device Registration with FMC
+Step 3: FTD High Availability Configuration
 
-Registers Cisco FTD devices with Firepower Management Center (FMC) using 
-device templates and credentials provided through Jenkins form parameters. 
-This step handles device registration, policy assignment, and deployment 
-status monitoring.
+Configures High Availability (HA) pairing between two Cisco FTD devices 
+through Firepower Management Center (FMC). This step establishes failover 
+relationships, configures LAN and stateful failover interfaces, and monitors 
+HA pair status until active/standby configuration is achieved.
 
 Key Features:
-- Dynamic device template loading and policy assignment
-- FMC REST API integration for device registration
-- Health status and deployment monitoring with timeout handling
-- Comprehensive error handling and logging
+- Automatic device discovery and interface mapping for HA configuration
+- Dynamic HA pair creation with primary/secondary device assignment
+- LAN failover and stateful failover interface configuration
+- Real-time HA status monitoring with timeout handling
+- Comprehensive error handling and logging for troubleshooting
+- Integration with Jenkins form parameters for flexible deployment
 """
 
 import requests

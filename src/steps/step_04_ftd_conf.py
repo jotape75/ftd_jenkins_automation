@@ -1,16 +1,16 @@
 """
-Step 4: FTD Zone, Interface and Route Configuration
+Step 4: FTD Network Configuration and Policy Assignment
 
-Configures Cisco FTD devices with security zones, interface settings, and static routes
-through FMC REST API. This step handles the complete network configuration including
-security zone creation, interface IP assignment, zone assignment, and default route creation.
+Configures comprehensive network settings for Cisco FTD devices including network objects,
+security zones, interfaces, routing, NAT policies, and platform settings assignment.
 
 Key Features:
-- Security zone creation and management
-- Physical interface configuration with IP addresses and security zone assignment
-- Static route creation with gateway host objects
-- HA-aware configuration targeting the primary device
-- Comprehensive error handling and logging
+- Network object and security zone creation with conflict detection
+- Interface configuration with IP addresses and HA standby IPs  
+- Static route creation and NAT policy assignment
+- Platform settings policy assignment with PUT/POST logic
+- HA-aware configuration targeting primary device
+- Email report integration for deployment tracking
 """
 
 import requests

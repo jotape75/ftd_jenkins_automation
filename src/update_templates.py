@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 """
-Update XML templates with Jenkins parameter values
+Update JSON templates with Jenkins parameter values
 
 Pre-processes configuration templates by replacing placeholders with values
 from Jenkins form parameters. Prepares templates for firewall configuration
@@ -8,9 +7,9 @@ steps while maintaining dynamic placeholders where needed.
 
 Key Features:
 - Loads parameters from Jenkins environment variables
-- Updates data interface, routing, NAT, and zones templates
-- Preserves HA template placeholders for per-device configuration
-- Handles both static values and dynamic interface assignments
+- Updates device registration, HA, objects, zones, interfaces, routing, and NAT templates
+- Preserves template structure while replacing user-specific values
+- Handles both static values and dynamic naming conventions
 - Validates template updates with comprehensive error handling
 """
 

@@ -8,27 +8,30 @@
  * Pipeline Stages:
  * 1. Repository setup and dependency installation
  * 2. Template preprocessing with Jenkins parameters
- * 3. FTD initial configuration (SSH manager setup)
- * 4. FMC API key generation for firewall authentication
- * 5. Device registration with FMC
- * 6. HA configuration and enablement
- * 7. Complete firewall configuration (interfaces, zones, routing, policies, NAT)
- * 8. Configuration commit and HA synchronization
+ * 3. FMC API key generation for authentication
+ * 4. Device registration with FMC
+ * 5. HA configuration and pairing
+ * 6. Complete firewall configuration (objects, zones, interfaces, routing, policies, NAT)
+ * 7. Configuration deployment and monitoring
+ * 8. Email deployment report generation
  * 
  * Key Features:
  * - Form-based parameter input for dynamic configuration
  * - Support for multiple FTD devices in HA configuration
- * - Combined interface selection (Interface | Name | Security Zone)
+ * - Three-interface deployment (Inside/Outside/DMZ) with security zones
+ * - HA failover interface configuration with standby IPs
  * - Comprehensive error handling and logging
  * - Artifact archival for audit and troubleshooting
+ * - Email reporting with deployment status and configuration summary
  * - Password security with automatic cleanup
+ * - Gmail SMTP integration for notifications
  */
 
 pipeline {
     agent any
     environment {
-        GMAIL_USERNAME = credentials('gmail-username')
-        GMAIL_APP_PASSWORD = credentials('gmail-app-password')
+        GMAIL_USERNAME = credentials('gmail-username') // add your work email here
+        GMAIL_APP_PASSWORD = credentials('gmail-app-password') // add your app password here
     }
     parameters {
         string(name: 'EMAIL_REPORT_DESTINATION', defaultValue: '', description: 'Add email addresses to receive the report (comma-separated for multiple recipients)')

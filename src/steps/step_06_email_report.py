@@ -1,15 +1,15 @@
 """
-Step 6: EMAIL DEPLOYMENT REPORT
+Step 5: FMC Configuration Deployment and Status Monitoring
 
-Configures Cisco FTD devices with security zones, interface settings, and static routes
-through FMC REST API. This step handles the complete network configuration including
-security zone creation, interface IP assignment, zone assignment, and default route creation.
+Deploys configurations to Cisco FTD devices through FMC and monitors deployment
+status until completion. This step handles the final deployment process, device
+health monitoring, and HA status verification.
 
 Key Features:
-- Security zone creation and management
-- Physical interface configuration with IP addresses and security zone assignment
-- Static route creation with gateway host objects
-- HA-aware configuration targeting the primary device
+- Automatic deployment initiation for deployable devices
+- Real-time deployment status monitoring with timeout handling
+- Device health status collection and reporting
+- HA pair status verification and reporting
 - Comprehensive error handling and logging
 """
 

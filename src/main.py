@@ -1,7 +1,7 @@
 """
-Main orchestrator for PA Firewall Jenkins Automation
+Main orchestrator for FTD Firewall Jenkins Automation
 
-Command-line entry point for Jenkins-based Palo Alto firewall deployment.
+Command-line entry point for Jenkins-based Cisco FTD firewall deployment.
 Executes individual automation steps based on arguments, with comprehensive
 logging and error handling for CI/CD pipeline integration.
 
@@ -12,6 +12,26 @@ Key Features:
 - Jenkins-compatible exit codes for pipeline flow control
 - Project root detection for flexible deployment environments
 - Comprehensive error handling with detailed logging for troubleshooting
+
+Available Steps:
+- api_keys: Generate and configure FMC API authentication tokens
+- add_dev_fmc: Add FTD devices to FMC management
+- conf_ha: Configure High Availability pairing between FTD devices
+- ftd_conf: Configure network objects, zones, interfaces, routes, and policies
+- fmc_deployment: Deploy configurations to FTD devices via FMC
+- email_report: Generate and send deployment status email report
+
+Usage:
+    python main.py --step api_keys
+    python main.py --step add_dev_fmc
+    python main.py --step conf_ha
+    python main.py --step ftd_conf
+    python main.py --step fmc_deployment
+    python main.py --step email_report
+
+Exit Codes:
+    0: Success
+    1: Failure (step failed or unknown step)
 """
 
 import argparse

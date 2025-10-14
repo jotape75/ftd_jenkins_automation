@@ -461,6 +461,8 @@ class Step04_FTD_CONF:
 
        ## CREATE DEFAULT ROUTE ###
         static_routes = self.email_report_data.get("static_routes", [])
+        GW_OUTSIDE = f'{os.getenv("FW_HOSTNAME_01", "")}_HA_outside_gw'
+
         try:
             static_route_payload = self.fmc_route_settings["static_route_payload"]
 
@@ -488,7 +490,7 @@ class Step04_FTD_CONF:
                 static_routes.append({
                     "name": static_route_payload.get('name', 'default_route'),  # Use template name
                     "source": any_ipv4_name or 'any-ipv4',  # Safe fallback
-                    "next_hop": static_route_payload.get('gateway', {}).get('object', {}).get('name', 'Gateway'),  # Safe nested access
+                    "next_hop": GW_OUTSIDE,
                     "type": "Static Route",
                     "id": route_response.get('id'),
                     "status": "created"

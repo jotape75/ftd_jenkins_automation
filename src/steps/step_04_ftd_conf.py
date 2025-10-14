@@ -608,13 +608,11 @@ class Step04_FTD_CONF:
                     logger.info(f"NAT rule created successfully - ID: {nat_rule_id}")
                     self.save_report_data_file()
                     logger.info("Email report data file updated with NAT rule.")
-                    dev_id ="75bbe1f6-a469-11f0-8c2e-c61e777f4f0a" #temporary, to be removed
                     nat_policy_assignment = self.fmc_policy_assignment["nat_policy_assignment"]
                     nat_policy_assignment["policy"]["name"] = nat_policy_name
                     nat_policy_assignment["policy"]["id"] = nat_policy_id
                     nat_policy_assignment["targets"][0]["name"] = self.ftd_ha_tmp['ha_payload']['name']
                     nat_policy_assignment["targets"][0]["id"] = self.primary_status_id
-                    #nat_policy_assignment["targets"][0]["id"] = dev_id #temporary, to be removed
                     response_policy_assignment = requests.post(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(nat_policy_assignment), verify=False)
                     if response_policy_assignment.status_code in [200, 201]:
                         logger.info(f"NAT policy '{nat_policy_name}' assigned to device {self.ftd_ha_tmp['ha_payload']['name']} successfully.")
@@ -638,9 +636,6 @@ class Step04_FTD_CONF:
         platform_settings = self.fmc_policy_assignment["psettings_policy_assignment"]
         platform_settings_update = self.fmc_policy_assignment["psettings_policy_assignment_update"]
         psettings_report = self.email_report_data.get("platform_settings", [])
-
-        #dev_id ="75bbe1f6-a469-11f0-8c2e-c61e777f4f0a" #temporary, to be removed
-
         try:
             response_platform_settings = requests.get(self.fmc_platform_settings_url, headers=self.rest_api_headers, verify=False)
             response_platform_settings.raise_for_status()
@@ -699,7 +694,6 @@ class Step04_FTD_CONF:
                     platform_settings["policy"]["name"] = platform_settings_name
                     platform_settings["policy"]["id"] = platform_settings_id
                     platform_settings["targets"][0]["id"] = self.primary_status_id
-                    #platform_settings["targets"][0]["id"] = dev_id #temporary, to be removed
                     response_policy_assignment = requests.post(self.fmc_policy_assignment_url, headers=self.rest_api_headers, data=json.dumps(platform_settings), verify=False)
                     if response_policy_assignment.status_code in [200, 201]:
                         logger.info(f"Platform settings '{platform_settings_name}' assigned to device {self.ftd_ha_tmp['ha_payload']['name']} successfully.")

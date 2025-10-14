@@ -72,14 +72,19 @@ class Step06_EMAIL_DEPLOYMENT_REPORT:
                                        "nat_rules": [],
                                        "platform_settings": []}
     def get_health_status_color(self, health):
+
+        _yellow = 'color: #B8860B;'  # Dark goldenrod 
+        _red = 'color: #DC143C;'  # Crimson 
+        _blue = 'color: #0000CD;' # Medium blue
+
         if health in ['green']:
             return 'color: green;'
         elif health in ['yellow']:
-            return 'color: yellow;'
+            return _yellow
         elif health in ['red']:
-            return 'color: red;'
+            return _red
         elif health in ['recovered']:
-            return 'color: blue;'
+            return _blue
         else:
             return 'color: black;'
 

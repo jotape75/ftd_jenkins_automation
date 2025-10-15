@@ -1,4 +1,3 @@
-cat > .gitignore << 'EOF'
 # Python
 __pycache__/
 *.py[cod]
@@ -19,7 +18,8 @@ logs/
 # Data files (may contain sensitive info)
 *.pkl
 automation_state.json
-automation_state.pkl
+email_report_data.json
+report_data.json
 
 # IDE
 .vscode/
@@ -37,8 +37,20 @@ myenv/
 env/
 venv/
 
-# Credentials (important!)
-.json
+# Credentials and sensitive files (important!)
 *password*
 *secret*
-EOF
+*credentials*
+*auth*
+api_keys.pkl
+tokens.pkl
+
+# Jenkins workspace artifacts
+workspace/
+.jenkins/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp

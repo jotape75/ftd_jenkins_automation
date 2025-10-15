@@ -1,5 +1,9 @@
+# HTTP requests for FMC REST API communication
 requests>=2.28.0
-pickle-mixin>=1.0.2
+
+# Path operations (backport for older Python versions)
 pathlib>=1.0.1
+
+# SSH connectivity for device troubleshooting (optional)
 netmiko>=4.0.0
 paramiko>=2.7.0

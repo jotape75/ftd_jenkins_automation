@@ -240,8 +240,9 @@ Contributions focused on:
 
 For questions or support:
 
-[![GitHub](https://img.shields.io/badge/GitHub-username-blue?style=flat&logo=github)](https://github.com/username)
-[![Email](https://img.shields.io/badge/Email-your.email%40domain.com-red?style=flat&logo=gmail)](mailto:your.email@domain.com)
+[![GitHub](https://img.shields.io/badge/GitHub-jotape75-blue?style=flat&logo=github)](https://github.com/jotape75)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-jotape75-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/jotape75)
+[![Email](https://img.shields.io/badge/Email-jotape75%40domain.com-red?style=flat&logo=gmail)](mailto:jotape75@domain.com)
 
 ## 📄 License
 

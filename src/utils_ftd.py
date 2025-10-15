@@ -1,16 +1,16 @@
 """
-Utility functions and constants for PA Firewall automation
+Utility functions and constants for Cisco FTD Firewall automation
 
 Provides shared utilities, file paths, and common functions for Jenkins-based
-Palo Alto firewall automation. Handles project structure navigation and
-commit operations across multiple automation steps.
+Cisco FTD firewall automation. Handles project structure navigation and
+shared operations across multiple automation steps.
 
 Key Features:
 - Dynamic project root detection for Jenkins and local environments
-- Centralized template file path management
-- Shared commit monitoring utility with job tracking and timeout handling
+- Centralized template file path management for FTD configuration
 - Path resolution using pathlib for cross-platform compatibility
-- SSL and timeout configuration for API operations
+- Centralized constants for FMC REST API operations
+- Template file path constants for all FTD configuration components
 """
 import os
 import json

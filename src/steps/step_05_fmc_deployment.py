@@ -236,11 +236,13 @@ class Step05_FMC_DEPLOYMENT:
 
     def execute(self):
         """
-        Execute FTD zone, interface and route configuration.
-        Uses credentials from Jenkins form parameters.
+        Execute FMC configuration deployment and monitoring.
+        
+        Deploys configurations to FTD devices, monitors deployment status,
+        and collects device health and HA status for reporting.
         
         Returns:
-            bool: True if successful, False otherwise
+            bool: True if deployment successful, False otherwise
         """
         try:
             

@@ -25,7 +25,7 @@ logger = logging.getLogger()
 
 class TemplateUpdater:
     """
-    Updates XML templates with Jenkins parameter values
+    Updates JSON templates with Jenkins parameter values
     """
     
     def __init__(self):

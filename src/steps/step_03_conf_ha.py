@@ -144,11 +144,23 @@ class Step03_HAConfig:
 
     def execute(self):
         """
-        Execute FTD device registration with FMC.
-        Uses credentials from Jenkins form parameters.
+        Execute FTD High Availability configuration with FMC.
+        
+        Configures HA pairing between two FTD devices using credentials and 
+        interface settings from Jenkins form parameters. Establishes primary/secondary
+        device roles, configures LAN and stateful failover interfaces, and monitors
+        HA status until active/standby configuration is achieved.
+        
+        Process Flow:
+        1. Load HA and device templates from JSON files
+        2. Initialize FMC API URLs using environment variables
+        3. Load authentication headers from pickle file
+        4. Discover devices and map HA interface IDs
+        5. Create HA pair configuration with primary/secondary assignment
+        6. Monitor HA establishment until active/standby status confirmed
         
         Returns:
-            bool: True if successful, False otherwise
+            bool: True if HA configuration successful, False otherwise
         """
         try:
 
